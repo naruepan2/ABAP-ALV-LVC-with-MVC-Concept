@@ -1,4 +1,4 @@
-# ABAP List Viewer with MVC Concept
+# ABAP List Viewer with MVC Concept by using REUSE_ALV_GRID_DISPLAY_LVC
 ## Framework architecture
 The framework consists of the following repo objects:
   1. The main controller class ZCL_MVCFW_BASE_CONTROLLER. A program will define its own main controller inheriting from this class.
