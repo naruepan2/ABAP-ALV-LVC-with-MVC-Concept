@@ -10,4 +10,4 @@ The framework consists of the following repo objects:
 
 The report YDEMO_APP_V2 is a simple application with a simple dynpro and two ALV grids in it.
 
-![image](https://user-images.githubusercontent.com/57941447/200183443-ff58196c-afc6-4639-b64e-15e5904ee9a8.png)
+![image](https://user-images.githubusercontent.com/57941447/200183813-4b2f9699-4a11-494a-9dd1-7c0e754c7304.png)
