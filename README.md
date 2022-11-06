@@ -6,3 +6,6 @@ The framework consists of the following repo objects:
   3. The model class ZCL_MVCFW_BASE_MODEL. This class will be rerieved any data for display result to ALV. 
   4. The screen class ZCL_MVCFW_BASE_SSCR. It will manipulate selection screen that handle via PBO and PAI.  
 
+## Demo application
+
+The report YDEMO_APP_V2 is a simple application with a simple dynpro and two ALV grids in it.
