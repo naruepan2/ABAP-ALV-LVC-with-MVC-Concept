@@ -9,6 +9,11 @@ The framework consists of the following repo objects:
 
 ## Demo application
 
-The report YDEMO_APP_V2 is a simple application with a simple dynpro and two ALV grids in it.
+The report YDEMO_APP_V2 is a sample application with a simple dynpro and two ALV grids in it.
 
 ![image](https://user-images.githubusercontent.com/57941447/200183813-4b2f9699-4a11-494a-9dd1-7c0e754c7304.png)
+
+If the program was double click to any row, it will deep-down into second ALV grids. 
+
+![image](https://user-images.githubusercontent.com/57941447/200185956-66ded94b-48d2-4cd3-a9d5-067e001a2e7e.png)
+
