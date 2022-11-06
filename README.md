@@ -5,6 +5,7 @@ The framework consists of the following repo objects:
   2. The dynpro class ZCL_MVCFW_BASE_VIEW. A program was called by function module REUSE_ALV_GRID_DISPLAY_LVC.
   3. The model class ZCL_MVCFW_BASE_MODEL. This class will be rerieved any data for display result to ALV. 
   4. The screen class ZCL_MVCFW_BASE_SSCR. It will manipulate selection screen that handle via PBO and PAI.  
+  5. The exception class ZBCX_EXCEPTION. It will be thrown any errors into this exception class.
 
 ## Demo application
 
