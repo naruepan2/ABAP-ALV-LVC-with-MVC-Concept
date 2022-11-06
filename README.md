@@ -17,4 +17,3 @@ If the program was double click to any row, it will deep-down into second ALV gr
 
 ![image](https://user-images.githubusercontent.com/57941447/200185986-353b7912-4894-4f08-a73b-dffae2ae6e99.png)
 ![image](https://user-images.githubusercontent.com/57941447/200185956-66ded94b-48d2-4cd3-a9d5-067e001a2e7e.png)
-
