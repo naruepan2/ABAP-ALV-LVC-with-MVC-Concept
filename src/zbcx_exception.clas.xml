@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZBCX_EXCEPTION</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Class base exception</DESCRIPT>
+    <CATEGORY>40</CATEGORY>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CMPNAME>MSGTY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Message Type</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>T100KEY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>T100 key with mapping of parameters to attribute names</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <SCONAME>IV_MSGID</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ABAP System Field: Message ID</DESCRIPT>
+    </SEOSUBCOTX>
+    <SEOSUBCOTX>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <SCONAME>IV_MSGNO</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ABAP System Field: Message Number</DESCRIPT>
+    </SEOSUBCOTX>
+    <SEOSUBCOTX>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <SCONAME>IV_MSGTY</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ABAP System Field: Message Type</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
+  </asx:values>
+ </asx:abap>
+</abapGit>
