@@ -32,6 +32,13 @@ public section.
       !IV_SAVE type CHAR1 optional
       !IS_VARIANT type DISVARIANT optional
       !IT_EVENT type SLIS_T_EVENT optional
+      !IT_EVENT_EXIT type SLIS_T_EVENT_EXIT optional
+      !IV_SCREEN_START_COLUMN type I optional
+      !IV_SCREEN_START_LINE type I optional
+      !IV_SCREEN_END_COLUMN type I optional
+      !IV_SCREEN_END_LINE type I optional
+      !IV_HTML_HEIGHT_TOP type I optional
+      !IV_HTML_HEIGHT_END type I optional
     exporting
       !EV_SET_PF_STATUS type SLIS_FORMNAME
       !EV_USER_COMMAND type SLIS_FORMNAME
@@ -50,6 +57,13 @@ public section.
       !EV_SAVE type CHAR1
       !ES_VARIANT type DISVARIANT
       !ET_EVENT type SLIS_T_EVENT
+      !ET_EVENT_EXIT type SLIS_T_EVENT_EXIT
+      !EV_SCREEN_START_COLUMN type I
+      !EV_SCREEN_START_LINE type I
+      !EV_SCREEN_END_COLUMN type I
+      !EV_SCREEN_END_LINE type I
+      !EV_HTML_HEIGHT_TOP type I
+      !EV_HTML_HEIGHT_END type I
     changing
       !CT_DATA type TABLE optional .
   methods DISPLAY
@@ -86,7 +100,7 @@ public section.
   methods SET_PF_STATUS
     importing
       value(IT_EXTAB) type SLIS_T_EXTAB optional
-      value(IV_STACK_NAME) type DFIES-TABNAME optional .
+      !IV_STACK_NAME type DFIES-TABNAME optional .
   methods USER_COMMAND
     importing
       !IM_UCOMM type SY-UCOMM
@@ -98,15 +112,25 @@ public section.
   methods CHECK_CHANGED_DATA
     importing
       !IO_DATA_CHANGED type ref to CL_ALV_CHANGED_DATA_PROTOCOL
-      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
-      !IV_STACK_NAME type DFIES-TABNAME optional
     changing
-      !CT_DATA type ref to DATA optional .
+      !CT_DATA type TABLE .
+  methods SET_TOP_OF_PAGE_HTML
+    importing
+      !IR_DD_DOC type ref to CL_DD_DOCUMENT
+      !IV_STACK_NAME type DFIES-TABNAME optional .
+  methods SET_TOP_OF_PAGE
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional .
+  methods SET_END_OF_PAGE_HTML
+    importing
+      !IR_DD_DOC type ref to CL_DD_DOCUMENT
+      !IV_STACK_NAME type DFIES-TABNAME optional .
   methods REGISTER_EVENT
     importing
       !IV_EVT_MODIFIED type FLAG optional
       !IV_EVT_ENTER type FLAG optional
       !IV_SET_OO_TOOLBAR type FLAG optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
     exporting
       !EO_GRID type ref to CL_GUI_ALV_GRID
     returning
@@ -205,6 +229,29 @@ public section.
       !CV_DEFAULT type CHAR1 optional
       !CV_SAVE type CHAR1 optional
       !CS_VARIANT type DISVARIANT optional .
+  methods MODIFY_CALLBACK_ROUTINES
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CV_SET_PF_STATUS type SLIS_FORMNAME optional
+      !CV_USER_COMMAND type SLIS_FORMNAME optional
+      !CV_CALLBACK_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !CV_CALLBACK_HTML_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !CV_CALLBACK_HTML_END_OF_LIST type SLIS_FORMNAME optional .
+  methods MODIFY_POPUP_SCREEN
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CV_SCREEN_START_COLUMN type I optional
+      !CV_SCREEN_START_LINE type I optional
+      !CV_SCREEN_END_COLUMN type I optional
+      !CV_SCREEN_END_LINE type I optional .
+  methods MODIFY_HTML_HEIGHT
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CV_HTML_HEIGHT_TOP type I optional
+      !CV_HTML_HEIGHT_END type I optional .
   methods GET_FIELDCAT
     returning
       value(RT_FIELDCAT_LVC) type LVC_T_FCAT .
@@ -219,7 +266,12 @@ public section.
       !IS_LAYO type LVC_S_LAYO .
   methods SET_STACK_NAME
     importing
-      !IV_STACK_NAME type DFIES-TABNAME default MC_STACK_MAIN .
+      !IV_STACK_NAME type DFIES-TABNAME default MC_STACK_MAIN
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods GET_STACK_NAME
+    returning
+      value(RV_STACK_NAME) type DFIES-TABNAME .
   methods SET_FCAT_TEXT
     importing
       !IV_TEXT type ANY optional
@@ -523,25 +575,8 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
   METHOD check_changed_data.
 *    DATA ls_modi TYPE lvc_s_modi.
-*    FIELD-SYMBOLS <lft_out> TYPE STANDARD TABLE.
 *
 *    BREAK-POINT.
-*
-** Check each modification:
-*    IF ct_data IS SUPPLIED.
-*      ASSIGN ct_data->* TO <lft_out>.
-*      CHECK <lft_out> IS ASSIGNED.
-*    ELSEIF io_model IS SUPPLIED.
-*      IF io_model IS BOUND.
-*        DATA(lo_out) = io_model->get_outtab( iv_stack_name ).
-*        IF lo_out IS BOUND.
-*          ASSIGN lo_out->* TO <lft_out>.
-*          CHECK <lft_out> IS ASSIGNED.
-*        ENDIF.
-*      ENDIF.
-*    ELSE.
-*      RETURN.
-*    ENDIF.
 *
 ** Check each modification:
 *    LOOP AT io_data_changed->mt_mod_cells INTO ls_modi.
@@ -1223,14 +1258,28 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 *      _prepare_default_alv( IMPORTING et_event = et_event ).
     ENDIF.
 
+    "ALV Callback form-routines
+    ev_set_pf_status = |{ iv_set_pf_status CASE = UPPER }|.
+    ev_user_command  = |{ iv_user_command CASE = UPPER }|.
+    ev_callback_top_of_page      = |{ iv_callback_top_of_page CASE = UPPER }|.
+    ev_callback_html_top_of_page = |{ iv_callback_html_top_of_page CASE = UPPER }|.
+    ev_callback_html_end_of_list = |{ iv_callback_html_end_of_list CASE = UPPER }|.
+
     "ALV Setting
-    es_grid_title    = is_grid_title.
-    es_grid_settings = is_grid_settings.
-    et_sort          = it_sort.
-    et_filter        = it_filter.
-    ev_default       = iv_default.
-    ev_save          = iv_save.
-    es_variant       = is_variant.
+    es_grid_title          = is_grid_title.
+    es_grid_settings       = is_grid_settings.
+    et_sort                = it_sort.
+    et_filter              = it_filter.
+    ev_default             = iv_default.
+    ev_save                = iv_save.
+    es_variant             = is_variant.
+    et_event_exit          = it_event_exit.
+    ev_screen_start_column = iv_screen_start_column.
+    ev_screen_start_line   = iv_screen_start_line.
+    ev_screen_end_column   = iv_screen_end_column.
+    ev_screen_end_line     = iv_screen_end_line.
+    ev_html_height_top     = iv_html_height_top.
+    ev_html_height_end     = iv_html_height_end.
 
     IF es_variant IS NOT INITIAL.
       _check_variant_existence( EXPORTING iv_save    = iv_save
@@ -1252,6 +1301,12 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
                       CHANGING  ct_event      = et_event ).
     modify_sort( EXPORTING iv_stack_name = lmv_current_stack
                  CHANGING ct_sort        = et_sort ).
+    modify_callback_routines( EXPORTING iv_stack_name               = lmv_current_stack
+                              CHANGING cv_set_pf_status             = ev_set_pf_status
+                                       cv_user_command              = ev_user_command
+                                       cv_callback_top_of_page      = ev_callback_top_of_page
+                                       cv_callback_html_top_of_page = ev_callback_html_top_of_page
+                                       cv_callback_html_end_of_list = ev_callback_html_end_of_list ).
     modify_alv_settings( EXPORTING iv_stack_name     = lmv_current_stack
                          CHANGING  cs_grid_title     = es_grid_title
                                    cs_grid_settings  = es_grid_settings
@@ -1262,47 +1317,55 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
                                    cv_default        = ev_default
                                    cv_save           = ev_save
                                    cs_variant        = es_variant ).
+    modify_popup_screen( EXPORTING iv_stack_name          = lmv_current_stack
+                         CHANGING  cv_screen_start_column = ev_screen_start_column
+                                   cv_screen_start_line   = ev_screen_start_line
+                                   cv_screen_end_column   = ev_screen_end_column
+                                   cv_screen_end_line     = ev_screen_end_line ).
+    modify_html_height( EXPORTING iv_stack_name      = lmv_current_stack
+                        CHANGING  cv_html_height_top = ev_html_height_top
+                                  cv_html_height_end = ev_html_height_end ).
 
     "Check PF_STATUS Routine
-    IF iv_set_pf_status IS NOT INITIAL.
-      _check_routine( EXPORTING iv_formname = iv_set_pf_status
+    IF ev_set_pf_status IS NOT INITIAL.
+      _check_routine( EXPORTING iv_formname = ev_set_pf_status
                       IMPORTING ev_found    = lv_found_routine ).
-      IF lv_found_routine IS NOT INITIAL.
-        ev_set_pf_status = |{ iv_set_pf_status CASE = UPPER }|.
+      IF lv_found_routine IS INITIAL.
+        CLEAR ev_set_pf_status.
       ENDIF.
     ENDIF.
 
     "Check USER_COMMAND Routine
-    IF iv_user_command IS NOT INITIAL.
-      _check_routine( EXPORTING iv_formname = iv_user_command
+    IF ev_user_command IS NOT INITIAL.
+      _check_routine( EXPORTING iv_formname = ev_user_command
                       IMPORTING ev_found    = lv_found_routine ).
-      IF lv_found_routine IS NOT INITIAL.
-        ev_user_command = |{ iv_user_command CASE = UPPER }|.
+      IF lv_found_routine IS INITIAL.
+        CLEAR ev_user_command.
       ENDIF.
     ENDIF.
 
     "Check TOP_OF_PAGE Routine
-    IF iv_callback_top_of_page IS NOT INITIAL.
-      _check_routine( EXPORTING iv_formname = iv_callback_top_of_page
+    IF ev_callback_top_of_page IS NOT INITIAL.
+      _check_routine( EXPORTING iv_formname = ev_callback_top_of_page
                       IMPORTING ev_found    = lv_found_routine ).
-      IF lv_found_routine IS NOT INITIAL.
-        ev_callback_top_of_page = |{ iv_callback_top_of_page CASE = UPPER }|.
+      IF lv_found_routine IS INITIAL.
+        CLEAR ev_callback_top_of_page.
       ENDIF.
-    ELSEIF iv_callback_html_top_of_page IS NOT INITIAL.
+    ELSEIF ev_callback_html_top_of_page IS NOT INITIAL.
       "Check HTML_TOP_OF_PAGE Routine
-      _check_routine( EXPORTING iv_formname = iv_callback_html_top_of_page
+      _check_routine( EXPORTING iv_formname = ev_callback_html_top_of_page
                       IMPORTING ev_found    = lv_found_routine ).
-      IF lv_found_routine IS NOT INITIAL.
-        ev_callback_html_top_of_page = |{ iv_callback_html_top_of_page CASE = UPPER }|.
+      IF lv_found_routine IS INITIAL.
+        CLEAR ev_callback_html_top_of_page.
       ENDIF.
     ENDIF.
 
     "Check HTML_END_OF_LIST Routine
-    IF iv_callback_html_end_of_list IS NOT INITIAL.
-      _check_routine( EXPORTING iv_formname = iv_callback_html_end_of_list
+    IF ev_callback_html_end_of_list IS NOT INITIAL.
+      _check_routine( EXPORTING iv_formname = ev_callback_html_end_of_list
                       IMPORTING ev_found    = lv_found_routine ).
-      IF lv_found_routine IS NOT INITIAL.
-        ev_callback_html_end_of_list = |{ iv_callback_html_end_of_list CASE = UPPER }|.
+      IF lv_found_routine IS INITIAL.
+        CLEAR ev_callback_html_end_of_list.
       ENDIF.
     ENDIF.
 
@@ -1325,7 +1388,6 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
         cv_save                      = ev_save
         cs_variant                   = es_variant
         ct_event                     = et_event ).
-
   ENDMETHOD.
 
 
@@ -1635,9 +1697,8 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
 
   METHOD set_stack_name.
-
     lmv_current_stack = iv_stack_name.
-
+    ro_view           = me.
   ENDMETHOD.
 
 
@@ -1765,7 +1826,6 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
         ct_fieldcat[ fieldname = |{ cs_layout-excp_fname CASE = UPPER }| ]-tech = abap_true.
       ENDIF.
     ENDIF.
-
   ENDMETHOD.
 
 
@@ -2291,5 +2351,41 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
         rv_stack_name = lc_stack_sub_init.
       ENDIF.
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_stack_name.
+    rv_stack_name = lmv_current_stack.
+  ENDMETHOD.
+
+
+  METHOD modify_callback_routines.
+  ENDMETHOD.
+
+
+  method MODIFY_HTML_HEIGHT.
+  endmethod.
+
+
+  METHOD modify_popup_screen.
+  ENDMETHOD.
+
+
+  METHOD set_end_of_page_html.
+  ENDMETHOD.
+
+
+  METHOD set_top_of_page.
+*CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
+*  EXPORTING
+*    it_list_commentary       =
+**   I_LOGO                   =
+**   I_END_OF_LIST_GRID       =
+**   I_ALV_FORM               =
+*
+  ENDMETHOD.
+
+
+  METHOD set_top_of_page_html.
   ENDMETHOD.
 ENDCLASS.

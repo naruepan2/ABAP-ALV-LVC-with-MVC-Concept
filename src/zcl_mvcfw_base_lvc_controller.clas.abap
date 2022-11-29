@@ -1,18 +1,18 @@
-CLASS zcl_mvcfw_base_lvc_controller DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_MVCFW_BASE_LVC_CONTROLLER definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ty_lvc_view_action,
+  types:
+    BEGIN OF ty_lvc_view_action,
         ucomm        TYPE sy-ucomm,
         selfield     TYPE slis_selfield,
         data_changed TYPE REF TO cl_alv_changed_data_protocol,
         cl_dd        TYPE REF TO cl_dd_document,
       END OF ty_lvc_view_action .
-    TYPES:
-      BEGIN OF ty_stack,
+  types:
+    BEGIN OF ty_stack,
         name         TYPE dfies-tabname,
         view         TYPE REF TO zcl_mvcfw_base_lvc_view,
         lvc_v_action TYPE REF TO ty_lvc_view_action,
@@ -22,191 +22,191 @@ CLASS zcl_mvcfw_base_lvc_controller DEFINITION
         is_current   TYPE flag,
         line         TYPE sy-index,
       END OF ty_stack .
-    TYPES:
-      BEGIN OF ty_stack_name,
+  types:
+    BEGIN OF ty_stack_name,
         line TYPE sy-index,
         name TYPE dfies-tabname,
       END OF ty_stack_name .
-    TYPES:
-      tty_stack TYPE TABLE OF ty_stack WITH EMPTY KEY
+  types:
+    tty_stack TYPE TABLE OF ty_stack WITH EMPTY KEY
                                            WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
-    TYPES:
-      tty_stack_name TYPE TABLE OF ty_stack_name WITH EMPTY KEY
+  types:
+    tty_stack_name TYPE TABLE OF ty_stack_name WITH EMPTY KEY
                                                      WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
 
-    CONSTANTS mc_stack_main TYPE dfies-tabname VALUE 'MAIN' ##NO_TEXT.
-    CONSTANTS mc_deflt_cntl TYPE seoclsname VALUE 'LCL_CONTROLLER' ##NO_TEXT.
-    CONSTANTS mc_deflt_model TYPE seoclsname VALUE 'LCL_MODEL' ##NO_TEXT.
-    CONSTANTS mc_deflt_view TYPE seoclsname VALUE 'LCL_VIEW' ##NO_TEXT.
-    CONSTANTS mc_deflt_sscr TYPE seoclsname VALUE 'LCL_SSCR' ##NO_TEXT.
-    CONSTANTS mc_deflt_outtab TYPE dfies-tabname VALUE 'MT_OUTTAB' ##NO_TEXT.
-    CONSTANTS mc_display_lvc_list TYPE salv_de_constant VALUE 1 ##NO_TEXT.
-    CONSTANTS mc_display_lvc_hierseq TYPE salv_de_constant VALUE 2 ##NO_TEXT.
-    DATA mo_sscr TYPE REF TO zcl_mvcfw_base_sscr READ-ONLY .
-    DATA mo_view TYPE REF TO zcl_mvcfw_base_lvc_view READ-ONLY .
-    DATA mo_model TYPE REF TO zcl_mvcfw_base_lvc_model READ-ONLY .
-    DATA ms_view_action TYPE ty_lvc_view_action READ-ONLY .
+  constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
+  constants MC_DEFLT_CNTL type SEOCLSNAME value 'LCL_CONTROLLER' ##NO_TEXT.
+  constants MC_DEFLT_MODEL type SEOCLSNAME value 'LCL_MODEL' ##NO_TEXT.
+  constants MC_DEFLT_VIEW type SEOCLSNAME value 'LCL_VIEW' ##NO_TEXT.
+  constants MC_DEFLT_SSCR type SEOCLSNAME value 'LCL_SSCR' ##NO_TEXT.
+  constants MC_DEFLT_OUTTAB type DFIES-TABNAME value 'MT_OUTTAB' ##NO_TEXT.
+  constants MC_DISPLAY_LVC_LIST type SALV_DE_CONSTANT value 1 ##NO_TEXT.
+  constants MC_DISPLAY_LVC_HIERSEQ type SALV_DE_CONSTANT value 2 ##NO_TEXT.
+  data MO_SSCR type ref to ZCL_MVCFW_BASE_SSCR read-only .
+  data MO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW read-only .
+  data MO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL read-only .
+  data MS_VIEW_ACTION type TY_LVC_VIEW_ACTION read-only .
 
-    EVENTS evt_pf_status
-      EXPORTING
-        VALUE(it_extab) TYPE slis_t_extab OPTIONAL .
-    EVENTS evt_user_command
-      EXPORTING
-        VALUE(im_ucomm)    TYPE sy-ucomm
-        VALUE(is_selfield) TYPE slis_selfield .
-    EVENTS evt_check_changed_data
-      EXPORTING
-        VALUE(io_data_changed) TYPE REF TO cl_alv_changed_data_protocol .
-    EVENTS evt_register_event .
-    EVENTS evt_top_of_page .
-    EVENTS evt_top_of_page_html
-      EXPORTING
-        VALUE(io_dd_doc) TYPE REF TO cl_dd_document .
-    EVENTS evt_end_of_page_html
-      EXPORTING
-        VALUE(io_dd_doc) TYPE REF TO cl_dd_document .
+  events EVT_PF_STATUS
+    exporting
+      value(IT_EXTAB) type SLIS_T_EXTAB optional .
+  events EVT_USER_COMMAND
+    exporting
+      value(IM_UCOMM) type SY-UCOMM
+      value(IS_SELFIELD) type SLIS_SELFIELD .
+  events EVT_CHECK_CHANGED_DATA
+    exporting
+      value(IO_DATA_CHANGED) type ref to CL_ALV_CHANGED_DATA_PROTOCOL .
+  events EVT_REGISTER_EVENT .
+  events EVT_TOP_OF_PAGE .
+  events EVT_TOP_OF_PAGE_HTML
+    exporting
+      value(IR_DD_DOC) type ref to CL_DD_DOCUMENT .
+  events EVT_END_OF_PAGE_HTML
+    exporting
+      value(IR_DD_DOC) type ref to CL_DD_DOCUMENT .
 
-    METHODS constructor
-      IMPORTING
-        !iv_cntl_name   TYPE seoclsname DEFAULT mc_deflt_cntl
-        !iv_modl_name   TYPE seoclsname DEFAULT mc_deflt_model
-        !iv_view_name   TYPE seoclsname DEFAULT mc_deflt_view
-        !iv_sscr_name   TYPE seoclsname DEFAULT mc_deflt_sscr
-        !iv_set_handler TYPE abap_bool DEFAULT abap_true .
-    METHODS display
-      IMPORTING
-        !iv_display_type              TYPE salv_de_constant DEFAULT mc_display_lvc_list
-        !iv_repid                     TYPE sy-cprog DEFAULT sy-cprog
-        !iv_set_pf_status             TYPE slis_formname DEFAULT 'SET_PF_STATUS'
-        !iv_user_command              TYPE slis_formname DEFAULT 'USER_COMMAND'
-        !iv_callback_top_of_page      TYPE slis_formname OPTIONAL
-        !iv_callback_html_top_of_page TYPE slis_formname OPTIONAL
-        !iv_callback_html_end_of_list TYPE slis_formname OPTIONAL
-        !is_grid_title                TYPE lvc_title OPTIONAL
-        !is_grid_settings             TYPE lvc_s_glay OPTIONAL
-        !is_layout                    TYPE lvc_s_layo OPTIONAL
-        !it_fieldcat                  TYPE lvc_t_fcat OPTIONAL
-        !it_excluding                 TYPE slis_t_extab OPTIONAL
-        !it_specl_grps                TYPE lvc_t_sgrp OPTIONAL
-        !it_sort                      TYPE lvc_t_sort OPTIONAL
-        !it_filter                    TYPE lvc_t_filt OPTIONAL
-        !iv_default                   TYPE char1 DEFAULT abap_true
-        !iv_save                      TYPE char1 DEFAULT abap_true
-        !is_variant                   TYPE disvariant OPTIONAL
-        !it_event                     TYPE slis_t_event OPTIONAL
-        !it_event_exit                TYPE slis_t_event_exit OPTIONAL
-        !iv_screen_start_column       TYPE i OPTIONAL
-        !iv_screen_start_line         TYPE i OPTIONAL
-        !iv_screen_end_column         TYPE i OPTIONAL
-        !iv_screen_end_line           TYPE i OPTIONAL
-        !iv_html_height_top           TYPE i OPTIONAL
-        !iv_html_height_end           TYPE i OPTIONAL
-        !iv_stack_name                TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_data                      TYPE table OPTIONAL
-      RAISING
-        zbcx_exception .
-    METHODS process_any_model
-      IMPORTING
-        !iv_method TYPE seoclsname
-        !it_param  TYPE abap_parmbind_tab OPTIONAL
-      EXPORTING
-        !it_excpt  TYPE abap_excpbind_tab
-      RAISING
-        zbcx_exception .
-    METHODS handle_sscr_pbo
-      IMPORTING
-        !iv_dynnr TYPE sy-dynnr DEFAULT sy-dynnr .
-    METHODS handle_sscr_pai
-      IMPORTING
-        !iv_dynnr TYPE sy-dynnr DEFAULT sy-dynnr .
-    METHODS handle_pf_status
-      FOR EVENT evt_pf_status OF zcl_mvcfw_base_lvc_controller
-      IMPORTING
-        !it_extab .
-    METHODS handle_user_command
-      FOR EVENT evt_user_command OF zcl_mvcfw_base_lvc_controller
-      IMPORTING
-        !im_ucomm
-        !is_selfield .
-    METHODS handle_check_changed_data
-      FOR EVENT evt_check_changed_data OF zcl_mvcfw_base_lvc_controller
-      IMPORTING
-        !io_data_changed .
-    METHODS handle_top_of_page_html
-      FOR EVENT evt_top_of_page_html OF zcl_mvcfw_base_lvc_controller
-      IMPORTING
-        !io_dd_doc .
-    METHODS handle_top_of_page
-        FOR EVENT evt_top_of_page OF zcl_mvcfw_base_lvc_controller .
-    METHODS handle_end_of_page_html
-      FOR EVENT evt_end_of_page_html OF zcl_mvcfw_base_lvc_controller
-      IMPORTING
-        !io_dd_doc .
-    METHODS handle_register_event
-        FOR EVENT evt_register_event OF zcl_mvcfw_base_lvc_controller .
-    METHODS set_stack_name
-      IMPORTING
-        !iv_stack_name       TYPE dfies-tabname
-        !io_model            TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-        !io_view             TYPE REF TO zcl_mvcfw_base_lvc_view OPTIONAL
-        !iv_not_checked      TYPE flag DEFAULT space
-      RETURNING
-        VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    METHODS raise_pf_status
-      IMPORTING
-        !it_extab TYPE slis_t_extab OPTIONAL .
-    METHODS raise_user_command
-      IMPORTING
-        !im_ucomm    TYPE sy-ucomm
-      CHANGING
-        !cs_selfield TYPE slis_selfield .
-    METHODS raise_check_changed_data
-      IMPORTING
-        !io_data_changed TYPE REF TO cl_alv_changed_data_protocol .
-    METHODS raise_register_event .
-    METHODS raise_top_of_page .
-    METHODS raise_top_of_page_html
-      IMPORTING
-        !io_dd_doc TYPE REF TO cl_dd_document OPTIONAL .
-    METHODS raise_end_of_page_html
-      IMPORTING
-        !io_dd_doc TYPE REF TO cl_dd_document OPTIONAL .
-    CLASS-METHODS check_routine_only
-      RETURNING
-        VALUE(rv_check_only) TYPE flag .
-    CLASS-METHODS get_static_control_instance
-      RETURNING
-        VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    METHODS get_control_instance
-      RETURNING
-        VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    METHODS check_routine
-      IMPORTING
-        !iv_set_value TYPE flag OPTIONAL
-        !iv_get_value TYPE flag OPTIONAL
-      EXPORTING
-        !ev_value     TYPE flag .
-    METHODS destroy_stack
-      IMPORTING
-        !iv_name         TYPE dfies-tabname OPTIONAL
-        !iv_current_name TYPE dfies-tabname OPTIONAL .
-    METHODS get_stack_by_name
-      IMPORTING
-        !iv_stack_name  TYPE dfies-tabname
-      RETURNING
-        VALUE(rs_stack) TYPE REF TO ty_stack .
-    METHODS get_all_stack
-      RETURNING
-        VALUE(rt_stack) TYPE tty_stack .
-    METHODS get_current_stack
-      RETURNING
-        VALUE(rv_current_stack) TYPE dfies-tabname .
-    METHODS set_view_action
-      IMPORTING
-        !ir_action           TYPE REF TO ty_lvc_view_action
-      RETURNING
-        VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
+  methods CONSTRUCTOR
+    importing
+      !IV_CNTL_NAME type SEOCLSNAME default MC_DEFLT_CNTL
+      !IV_MODL_NAME type SEOCLSNAME default MC_DEFLT_MODEL
+      !IV_VIEW_NAME type SEOCLSNAME default MC_DEFLT_VIEW
+      !IV_SSCR_NAME type SEOCLSNAME default MC_DEFLT_SSCR
+      !IV_SET_HANDLER type ABAP_BOOL default ABAP_TRUE .
+  methods DISPLAY
+    importing
+      !IV_DISPLAY_TYPE type SALV_DE_CONSTANT default MC_DISPLAY_LVC_LIST
+      !IV_REPID type SY-CPROG default SY-CPROG
+      !IV_SET_PF_STATUS type SLIS_FORMNAME default 'SET_PF_STATUS'
+      !IV_USER_COMMAND type SLIS_FORMNAME default 'USER_COMMAND'
+      !IV_CALLBACK_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_END_OF_LIST type SLIS_FORMNAME optional
+      !IS_GRID_TITLE type LVC_TITLE optional
+      !IS_GRID_SETTINGS type LVC_S_GLAY optional
+      !IS_LAYOUT type LVC_S_LAYO optional
+      !IT_FIELDCAT type LVC_T_FCAT optional
+      !IT_EXCLUDING type SLIS_T_EXTAB optional
+      !IT_SPECL_GRPS type LVC_T_SGRP optional
+      !IT_SORT type LVC_T_SORT optional
+      !IT_FILTER type LVC_T_FILT optional
+      !IV_DEFAULT type CHAR1 default ABAP_TRUE
+      !IV_SAVE type CHAR1 default ABAP_TRUE
+      !IS_VARIANT type DISVARIANT optional
+      !IT_EVENT type SLIS_T_EVENT optional
+      !IT_EVENT_EXIT type SLIS_T_EVENT_EXIT optional
+      !IV_SCREEN_START_COLUMN type I optional
+      !IV_SCREEN_START_LINE type I optional
+      !IV_SCREEN_END_COLUMN type I optional
+      !IV_SCREEN_END_LINE type I optional
+      !IV_HTML_HEIGHT_TOP type I optional
+      !IV_HTML_HEIGHT_END type I optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_DATA type TABLE optional
+    raising
+      ZBCX_EXCEPTION .
+  methods PROCESS_ANY_MODEL
+    importing
+      !IV_METHOD type SEOCLSNAME
+      !IT_PARAM type ABAP_PARMBIND_TAB optional
+    exporting
+      !IT_EXCPT type ABAP_EXCPBIND_TAB
+    raising
+      ZBCX_EXCEPTION .
+  methods HANDLE_SSCR_PBO
+    importing
+      !IV_DYNNR type SY-DYNNR default SY-DYNNR .
+  methods HANDLE_SSCR_PAI
+    importing
+      !IV_DYNNR type SY-DYNNR default SY-DYNNR .
+  methods HANDLE_PF_STATUS
+    for event EVT_PF_STATUS of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IT_EXTAB .
+  methods HANDLE_USER_COMMAND
+    for event EVT_USER_COMMAND of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IM_UCOMM
+      !IS_SELFIELD .
+  methods HANDLE_CHECK_CHANGED_DATA
+    for event EVT_CHECK_CHANGED_DATA of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IO_DATA_CHANGED .
+  methods HANDLE_TOP_OF_PAGE_HTML
+    for event EVT_TOP_OF_PAGE_HTML of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IR_DD_DOC .
+  methods HANDLE_TOP_OF_PAGE
+    for event EVT_TOP_OF_PAGE of ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods HANDLE_END_OF_PAGE_HTML
+    for event EVT_END_OF_PAGE_HTML of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IR_DD_DOC .
+  methods HANDLE_REGISTER_EVENT
+    for event EVT_REGISTER_EVENT of ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods SET_STACK_NAME
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+      !IO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW optional
+      !IV_NOT_CHECKED type FLAG default SPACE
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods RAISE_PF_STATUS
+    importing
+      !IT_EXTAB type SLIS_T_EXTAB optional .
+  methods RAISE_USER_COMMAND
+    importing
+      !IM_UCOMM type SY-UCOMM
+    changing
+      !CS_SELFIELD type SLIS_SELFIELD .
+  methods RAISE_CHECK_CHANGED_DATA
+    importing
+      !IO_DATA_CHANGED type ref to CL_ALV_CHANGED_DATA_PROTOCOL .
+  methods RAISE_REGISTER_EVENT .
+  methods RAISE_TOP_OF_PAGE .
+  methods RAISE_TOP_OF_PAGE_HTML
+    importing
+      !IR_DD_DOC type ref to CL_DD_DOCUMENT optional .
+  methods RAISE_END_OF_PAGE_HTML
+    importing
+      !IR_DD_DOC type ref to CL_DD_DOCUMENT optional .
+  class-methods CHECK_ROUTINE_ONLY
+    returning
+      value(RV_CHECK_ONLY) type FLAG .
+  class-methods GET_STATIC_CONTROL_INSTANCE
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods GET_CONTROL_INSTANCE
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods CHECK_ROUTINE
+    importing
+      !IV_SET_VALUE type FLAG optional
+      !IV_GET_VALUE type FLAG optional
+    exporting
+      !EV_VALUE type FLAG .
+  methods DESTROY_STACK
+    importing
+      !IV_NAME type DFIES-TABNAME optional
+      !IV_CURRENT_NAME type DFIES-TABNAME optional .
+  methods GET_STACK_BY_NAME
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME
+    returning
+      value(RS_STACK) type ref to TY_STACK .
+  methods GET_ALL_STACK
+    returning
+      value(RT_STACK) type TTY_STACK .
+  methods GET_CURRENT_STACK
+    returning
+      value(RV_CURRENT_STACK) type DFIES-TABNAME .
+  methods SET_VIEW_ACTION
+    importing
+      !IR_ACTION type ref to TY_LVC_VIEW_ACTION
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
 protected section.
 
   data LMT_STACK_CALLED type TTY_STACK_NAME .
@@ -561,21 +561,40 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
   METHOD handle_check_changed_data.
+    DATA: lo_out TYPE REF TO data.
+    FIELD-SYMBOLS: <lft_outtab> TYPE table.
+
     TRY.
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
+          lo_out = lo_stack->model->get_outtab( lmv_current_stack ).
+          IF lo_out IS BOUND.
+            ASSIGN lo_out->* TO <lft_outtab>.
+          ENDIF.
+
+          CHECK <lft_outtab> IS ASSIGNED.
+
           lo_stack->view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                                        io_model        = lmo_current_model
-                                                        iv_stack_name   = lo_stack->name ).
-        ELSEIF mo_view IS BOUND.
-          mo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                                 io_model        = lmo_current_model
-                                                 iv_stack_name   = lo_stack->name ).
+                                              CHANGING  ct_data         = <lft_outtab> ).
+          lo_stack->view->refresh_table_display( ).
         ELSE.
-          DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
-          lo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                                 io_model        = lmo_current_model
-                                                 iv_stack_name   = lo_stack->name ).
+          lo_out = lmo_current_model->get_outtab( lmv_current_stack ).
+          IF lo_out IS BOUND.
+            ASSIGN lo_out->* TO <lft_outtab>.
+          ENDIF.
+
+          CHECK <lft_outtab> IS ASSIGNED.
+
+          IF mo_view IS BOUND.
+            mo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                         CHANGING  ct_data         = <lft_outtab> ).
+            mo_view->refresh_table_display( ).
+          ELSE.
+            DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
+            lo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                         CHANGING  ct_data         = <lft_outtab> ).
+            lo_view->refresh_table_display( ).
+          ENDIF.
         ENDIF.
       CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
         DATA(lv_msg) = lo_dyn_except->get_text( ).
@@ -584,6 +603,22 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
   METHOD handle_end_of_page_html.
+    TRY.
+        DATA(lo_stack) = _get_stack( lmv_current_stack ).
+        IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
+          lo_stack->view->set_end_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                          iv_stack_name = lo_stack->name ).
+        ELSEIF mo_view IS BOUND.
+          mo_view->set_end_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                   iv_stack_name = lmv_current_stack ).
+        ELSE.
+          DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
+          lo_view->set_end_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                   iv_stack_name = lmv_current_stack ).
+        ENDIF.
+      CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
+        DATA(lv_msg) = lo_dyn_except->get_text( ).
+    ENDTRY.
   ENDMETHOD.
 
 
@@ -592,7 +627,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
           lo_stack->view->set_pf_status( EXPORTING it_extab      = it_extab
-                                                   iv_stack_name = lmv_current_stack ).
+                                                   iv_stack_name = lo_stack->name ).
         ELSEIF mo_view IS BOUND.
           mo_view->set_pf_status( EXPORTING it_extab      = it_extab
                                             iv_stack_name = lmv_current_stack ).
@@ -645,17 +680,39 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
   METHOD handle_top_of_page.
-*CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
-*  EXPORTING
-*    it_list_commentary       =
-**   I_LOGO                   =
-**   I_END_OF_LIST_GRID       =
-**   I_ALV_FORM               =
-*
+    TRY.
+        DATA(lo_stack) = _get_stack( lmv_current_stack ).
+        IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
+          lo_stack->view->set_top_of_page( lo_stack->name ).
+        ELSEIF mo_view IS BOUND.
+          mo_view->set_top_of_page( lmv_current_stack ).
+        ELSE.
+          DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
+          lo_view->set_top_of_page( lmv_current_stack ).
+        ENDIF.
+      CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
+        DATA(lv_msg) = lo_dyn_except->get_text( ).
+    ENDTRY.
   ENDMETHOD.
 
 
   METHOD handle_top_of_page_html.
+    TRY.
+        DATA(lo_stack) = _get_stack( lmv_current_stack ).
+        IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
+          lo_stack->view->set_top_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                          iv_stack_name = lo_stack->name ).
+        ELSEIF mo_view IS BOUND.
+          mo_view->set_top_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                   iv_stack_name = lmv_current_stack ).
+        ELSE.
+          DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
+          lo_view->set_top_of_page_html( EXPORTING ir_dd_doc     = ir_dd_doc
+                                                   iv_stack_name = lmv_current_stack ).
+        ENDIF.
+      CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
+        DATA(lv_msg) = lo_dyn_except->get_text( ).
+    ENDTRY.
   ENDMETHOD.
 
 
@@ -674,14 +731,14 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
           mo_view->user_command( EXPORTING im_ucomm      = im_ucomm
                                            io_model      = me->mo_model
                                            io_controller = me
-                                           iv_stack_name = lo_stack->name
+                                           iv_stack_name = lmv_current_stack
                                  CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSE.
           DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
           lo_view->user_command( EXPORTING im_ucomm      = im_ucomm
                                            io_model      = me->mo_model
                                            io_controller = me
-                                           iv_stack_name = lo_stack->name
+                                           iv_stack_name = lmv_current_stack
                                  CHANGING  cs_selfield   = ms_view_action-selfield ).
         ENDIF.
       CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
@@ -739,7 +796,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
   METHOD raise_end_of_page_html.
     RAISE EVENT evt_end_of_page_html
       EXPORTING
-        io_dd_doc = io_dd_doc.
+        ir_dd_doc = ir_dd_doc.
   ENDMETHOD.
 
 
@@ -763,7 +820,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
   METHOD raise_top_of_page_html.
     RAISE EVENT evt_top_of_page_html
       EXPORTING
-        io_dd_doc = io_dd_doc.
+        ir_dd_doc = ir_dd_doc.
   ENDMETHOD.
 
 
@@ -954,7 +1011,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
       lo_out = REF #( ct_data ).
     ELSE.
       IF lo_stack->model IS BOUND.
-        lo_out = lo_stack->model->get_controller_action( ms_view_action )->get_outtab( iv_stack_name = lmv_current_stack ).
+        lo_out = lo_stack->model->get_controller_action( ms_view_action )->get_outtab( lmv_current_stack ).
       ENDIF.
     ENDIF.
     IF lo_out IS BOUND.

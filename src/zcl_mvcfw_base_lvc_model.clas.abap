@@ -1,19 +1,19 @@
-CLASS zcl_mvcfw_base_lvc_model DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_MVCFW_BASE_LVC_MODEL definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ty_incl_outtab_ext,
+  types:
+    BEGIN OF ty_incl_outtab_ext,
         alv_traff   TYPE bkk_lightcode,  "1=Red, 2=Yellow, 3=Green
         alv_celltab TYPE lvc_t_styl,     "Style Table for Cells
         alv_s_color TYPE char04,         "Simple row color coding
         alv_c_color TYPE lvc_t_scol,     "Complex cell color coding
       END OF ty_incl_outtab_ext .
 
-    CONSTANTS:
-      BEGIN OF color,
+  constants:
+    BEGIN OF color,
         blue                         TYPE char04 VALUE 'C100',
         blue_intensified             TYPE char04 VALUE 'C110',
         blue_intensified_inversed    TYPE char04 VALUE 'C111',
@@ -43,83 +43,86 @@ CLASS zcl_mvcfw_base_lvc_model DEFINITION
         orange_intensified_inversed  TYPE char04 VALUE 'C711',
         orange_inversed              TYPE char04 VALUE 'C701',
       END OF color .
-    CONSTANTS mc_stack_main TYPE dfies-tabname VALUE 'MAIN' ##NO_TEXT.
-    CONSTANTS mc_deflt_outtab TYPE dfies-tabname VALUE 'MT_OUTTAB' ##NO_TEXT.
-    CONSTANTS mc_deflt_model TYPE seoclsname VALUE 'LCL_MODEL' ##NO_TEXT.
-    CONSTANTS mc_style_enabled TYPE raw4 VALUE cl_gui_alv_grid=>mc_style_enabled ##NO_TEXT.
-    CONSTANTS mc_style_disabled TYPE raw4 VALUE cl_gui_alv_grid=>mc_style_disabled ##NO_TEXT.
-    DATA mo_model_utils TYPE REF TO zcl_mvcfw_base_utils_model READ-ONLY .
-    DATA ms_action TYPE zcl_mvcfw_base_lvc_controller=>ty_lvc_view_action READ-ONLY .
+  constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
+  constants MC_DEFLT_OUTTAB type DFIES-TABNAME value 'MT_OUTTAB' ##NO_TEXT.
+  constants MC_DEFLT_MODEL type SEOCLSNAME value 'LCL_MODEL' ##NO_TEXT.
+  constants MC_STYLE_ENABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_ENABLED ##NO_TEXT.
+  constants MC_STYLE_DISABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_DISABLED ##NO_TEXT.
+  data MO_MODEL_UTILS type ref to ZCL_MVCFW_BASE_UTILS_MODEL read-only .
+  data MS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION read-only .
 
-    METHODS constructor .
-    METHODS select_data
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model
-      RAISING
-        zbcx_exception .
-    METHODS process_data
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model
-      RAISING
-        zbcx_exception .
-    METHODS get_outtab
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-      RETURNING
-        VALUE(ro_data) TYPE REF TO data .
-    METHODS set_outtab
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-        !it_data       TYPE table .
-    METHODS set_editable_cell
-      IMPORTING
-        !iv_fname       TYPE lvc_fname
-        !iv_disabled    TYPE abap_bool DEFAULT abap_true
-      CHANGING
-        !ct_style       TYPE lvc_t_styl
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
-    METHODS set_style_cell
-      IMPORTING
-        !iv_fname       TYPE lvc_fname
-        !iv_style       TYPE lvc_s_styl-style OPTIONAL
-        !iv_style2      TYPE lvc_s_styl-style2 OPTIONAL
-        !iv_style3      TYPE lvc_s_styl-style3 OPTIONAL
-        !iv_style4      TYPE lvc_s_styl-style4 OPTIONAL
-      CHANGING
-        !ct_style       TYPE lvc_t_styl
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
-    METHODS set_color_cell
-      IMPORTING
-        !iv_fname       TYPE lvc_fname
-        !is_color       TYPE lvc_s_colo OPTIONAL
-        !iv_color       TYPE char04 OPTIONAL
-        !iv_nokeycol    TYPE lvc_nokeyc OPTIONAL
-      CHANGING
-        !ct_color       TYPE lvc_t_scol
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
-    METHODS set_color_all_cells
-      IMPORTING
-        !is_data        TYPE any
-        !is_color       TYPE lvc_s_colo OPTIONAL
-        !iv_color       TYPE char04 OPTIONAL
-        !iv_nokeycol    TYPE lvc_nokeyc OPTIONAL
-      CHANGING
-        !ct_color       TYPE lvc_t_scol
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
-    METHODS set_stack_name
-      IMPORTING
-        !iv_stack_name  TYPE dfies-tabname DEFAULT mc_stack_main
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
-    METHODS get_controller_action
-      IMPORTING
-        !is_action      TYPE zcl_mvcfw_base_lvc_controller=>ty_lvc_view_action
-      RETURNING
-        VALUE(ro_model) TYPE REF TO zcl_mvcfw_base_lvc_model .
+  methods CONSTRUCTOR .
+  methods SELECT_DATA
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL
+    raising
+      ZBCX_EXCEPTION .
+  methods PROCESS_DATA
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL
+    raising
+      ZBCX_EXCEPTION .
+  methods GET_OUTTAB
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    returning
+      value(RO_DATA) type ref to DATA .
+  methods SET_OUTTAB
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+      !IT_DATA type TABLE .
+  methods SET_EDITABLE_CELL
+    importing
+      !IV_FNAME type LVC_FNAME
+      !IV_DISABLED type ABAP_BOOL default ABAP_TRUE
+    changing
+      !CT_STYLE type LVC_T_STYL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods SET_STYLE_CELL
+    importing
+      !IV_FNAME type LVC_FNAME
+      !IV_STYLE type LVC_S_STYL-STYLE optional
+      !IV_STYLE2 type LVC_S_STYL-STYLE2 optional
+      !IV_STYLE3 type LVC_S_STYL-STYLE3 optional
+      !IV_STYLE4 type LVC_S_STYL-STYLE4 optional
+    changing
+      !CT_STYLE type LVC_T_STYL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods SET_COLOR_CELL
+    importing
+      !IV_FNAME type LVC_FNAME
+      !IS_COLOR type LVC_S_COLO optional
+      !IV_COLOR type CHAR04 optional
+      !IV_NOKEYCOL type LVC_NOKEYC optional
+    changing
+      !CT_COLOR type LVC_T_SCOL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods SET_COLOR_ALL_CELLS
+    importing
+      !IS_DATA type ANY
+      !IS_COLOR type LVC_S_COLO optional
+      !IV_COLOR type CHAR04 optional
+      !IV_NOKEYCOL type LVC_NOKEYC optional
+    changing
+      !CT_COLOR type LVC_T_SCOL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods SET_STACK_NAME
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME default MC_STACK_MAIN
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods GET_STACK_NAME
+    returning
+      value(RV_STACK_NAME) type DFIES-TABNAME .
+  methods GET_CONTROLLER_ACTION
+    importing
+      !IS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
   PROTECTED SECTION.
 
     DATA lmv_current_stack TYPE dfies-tabname VALUE mc_stack_main ##NO_TEXT.
@@ -379,5 +382,10 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
 
   METHOD _get_current_stack.
     re_current_stack = lmv_current_stack.
+  ENDMETHOD.
+
+
+  METHOD get_stack_name.
+    rv_stack_name = lmv_current_stack.
   ENDMETHOD.
 ENDCLASS.

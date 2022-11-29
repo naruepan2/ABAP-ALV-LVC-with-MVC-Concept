@@ -84,7 +84,7 @@ CLASS lcl_model IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_outtab.
-    CASE lmv_current_stack.
+    CASE iv_stack_name.
       WHEN mc_stack_main.
         ro_data = _get_main_outtab( ).
       WHEN 'SUB01'.
