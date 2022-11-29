@@ -1,363 +1,366 @@
-CLASS zcl_mvcfw_base_lvc_view DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_MVCFW_BASE_LVC_VIEW definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    CONSTANTS mc_stack_main TYPE dfies-tabname VALUE 'MAIN' ##NO_TEXT.
-    CONSTANTS mc_deflt_cntl TYPE seoclsname VALUE 'LCL_CONTROLLER' ##NO_TEXT.
-    CONSTANTS mc_deflt_view TYPE seoclsname VALUE 'LCL_VIEW' ##NO_TEXT.
+  constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
+  constants MC_DEFLT_CNTL type SEOCLSNAME value 'LCL_CONTROLLER' ##NO_TEXT.
+  constants MC_DEFLT_VIEW type SEOCLSNAME value 'LCL_VIEW' ##NO_TEXT.
 
-    METHODS constructor
-      IMPORTING
-        !iv_cntl_name TYPE seoclsname OPTIONAL
-        !iv_view_name TYPE seoclsname OPTIONAL .
-    METHODS prepare_display
-      IMPORTING
-        !iv_repid                     TYPE sy-cprog DEFAULT sy-cprog
-        !iv_set_pf_status             TYPE slis_formname OPTIONAL
-        !iv_user_command              TYPE slis_formname OPTIONAL
-        !iv_callback_top_of_page      TYPE slis_formname OPTIONAL
-        !iv_callback_html_top_of_page TYPE slis_formname OPTIONAL
-        !iv_callback_html_end_of_list TYPE slis_formname OPTIONAL
-        !is_grid_title                TYPE lvc_title OPTIONAL
-        !is_grid_settings             TYPE lvc_s_glay OPTIONAL
-        !is_layout                    TYPE lvc_s_layo OPTIONAL
-        !it_fieldcat                  TYPE lvc_t_fcat OPTIONAL
-        !it_excluding                 TYPE slis_t_extab OPTIONAL
-        !it_special_groups            TYPE lvc_t_sgrp OPTIONAL
-        !it_sort                      TYPE lvc_t_sort OPTIONAL
-        !it_filter                    TYPE lvc_t_filt OPTIONAL
-        !iv_default                   TYPE char1 OPTIONAL
-        !iv_save                      TYPE char1 OPTIONAL
-        !is_variant                   TYPE disvariant OPTIONAL
-        !it_event                     TYPE slis_t_event OPTIONAL
-      EXPORTING
-        !ev_set_pf_status             TYPE slis_formname
-        !ev_user_command              TYPE slis_formname
-        !ev_callback_top_of_page      TYPE slis_formname
-        !ev_callback_html_top_of_page TYPE slis_formname
-        !ev_callback_html_end_of_list TYPE slis_formname
-        !es_grid_title                TYPE lvc_title
-        !es_grid_settings             TYPE lvc_s_glay
-        !es_layout                    TYPE lvc_s_layo
-        !et_fieldcat                  TYPE lvc_t_fcat
-        !et_excluding                 TYPE slis_t_extab
-        !et_special_groups            TYPE lvc_t_sgrp
-        !et_sort                      TYPE lvc_t_sort
-        !et_filter                    TYPE lvc_t_filt
-        !ev_default                   TYPE char1
-        !ev_save                      TYPE char1
-        !es_variant                   TYPE disvariant
-        !et_event                     TYPE slis_t_event
-      CHANGING
-        !ct_data                      TYPE table OPTIONAL .
-    METHODS display
-      IMPORTING
-        VALUE(iv_repid)                     TYPE sy-cprog DEFAULT sy-cprog
-        VALUE(iv_set_pf_status)             TYPE slis_formname OPTIONAL
-        VALUE(iv_user_command)              TYPE slis_formname OPTIONAL
-        VALUE(iv_callback_top_of_page)      TYPE slis_formname OPTIONAL
-        VALUE(iv_callback_html_top_of_page) TYPE slis_formname OPTIONAL
-        VALUE(iv_callback_html_end_of_list) TYPE slis_formname OPTIONAL
-        VALUE(is_grid_title)                TYPE lvc_title OPTIONAL
-        VALUE(is_grid_settings)             TYPE lvc_s_glay OPTIONAL
-        VALUE(is_layout)                    TYPE lvc_s_layo OPTIONAL
-        VALUE(it_fieldcat)                  TYPE lvc_t_fcat OPTIONAL
-        VALUE(it_excluding)                 TYPE slis_t_extab OPTIONAL
-        VALUE(it_specl_grps)                TYPE lvc_t_sgrp OPTIONAL
-        VALUE(it_sort)                      TYPE lvc_t_sort OPTIONAL
-        VALUE(it_filter)                    TYPE lvc_t_filt OPTIONAL
-        VALUE(iv_default)                   TYPE char1 OPTIONAL
-        VALUE(iv_save)                      TYPE char1 OPTIONAL
-        VALUE(is_variant)                   TYPE disvariant OPTIONAL
-        VALUE(it_event)                     TYPE slis_t_event OPTIONAL
-        VALUE(it_event_exit)                TYPE slis_t_event_exit OPTIONAL
-        VALUE(iv_screen_start_column)       TYPE i OPTIONAL
-        VALUE(iv_screen_start_line)         TYPE i OPTIONAL
-        VALUE(iv_screen_end_column)         TYPE i OPTIONAL
-        VALUE(iv_screen_end_line)           TYPE i OPTIONAL
-        VALUE(iv_html_height_top)           TYPE i OPTIONAL
-        VALUE(iv_html_height_end)           TYPE i OPTIONAL
-      CHANGING
-        !ct_data                            TYPE table
-      RAISING
-        zbcx_exception .
-    METHODS set_pf_status
-      IMPORTING
-        VALUE(it_extab)      TYPE slis_t_extab OPTIONAL
-        VALUE(iv_stack_name) TYPE dfies-tabname OPTIONAL .
-    METHODS user_command
-      IMPORTING
-        !im_ucomm      TYPE sy-ucomm
-        !io_model      TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-        !io_controller TYPE REF TO zcl_mvcfw_base_lvc_controller OPTIONAL
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !cs_selfield   TYPE slis_selfield OPTIONAL .
-    METHODS check_changed_data
-      IMPORTING
-        !io_data_changed TYPE REF TO cl_alv_changed_data_protocol
-        !io_model        TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-        !iv_stack_name   TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_data         TYPE REF TO data OPTIONAL .
-    METHODS register_event
-      IMPORTING
-        !iv_evt_modified   TYPE flag OPTIONAL
-        !iv_evt_enter      TYPE flag OPTIONAL
-        !iv_set_oo_toolbar TYPE flag OPTIONAL
-      EXPORTING
-        !eo_grid           TYPE REF TO cl_gui_alv_grid
-      RETURNING
-        VALUE(ro_view)     TYPE REF TO zcl_mvcfw_base_lvc_view .
-    METHODS refresh_table_display
-      IMPORTING
-        VALUE(is_stable)       TYPE lvc_s_stbl OPTIONAL
-        VALUE(iv_soft_refresh) TYPE char01 OPTIONAL .
-    METHODS refresh_alv_selfield
-      IMPORTING
-        !iv_soft_refresh TYPE char01 OPTIONAL
-      CHANGING
-        !cs_selfield     TYPE slis_selfield .
-    METHODS create_new_view_to_controller
-      IMPORTING
-        VALUE(iv_stack_name) TYPE dfies-tabname
-        !io_model            TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-        !io_controller       TYPE REF TO zcl_mvcfw_base_lvc_controller OPTIONAL
-        !ir_action           TYPE REF TO zcl_mvcfw_base_lvc_controller=>ty_lvc_view_action OPTIONAL
-      EXPORTING
-        !eo_controller       TYPE REF TO zcl_mvcfw_base_lvc_controller
-      RETURNING
-        VALUE(ro_view)       TYPE REF TO zcl_mvcfw_base_lvc_view
-      RAISING
-        zbcx_exception .
-    METHODS display_sub_alv
-      IMPORTING
-        VALUE(iv_repid)                     TYPE sy-cprog DEFAULT sy-cprog
-        VALUE(iv_set_pf_status)             TYPE slis_formname DEFAULT 'SET_PF_STATUS'
-        VALUE(iv_user_command)              TYPE slis_formname DEFAULT 'USER_COMMAND'
-        VALUE(iv_callback_top_of_page)      TYPE slis_formname OPTIONAL
-        VALUE(iv_callback_html_top_of_page) TYPE slis_formname OPTIONAL
-        VALUE(iv_callback_html_end_of_list) TYPE slis_formname OPTIONAL
-        VALUE(is_grid_title)                TYPE lvc_title OPTIONAL
-        VALUE(is_grid_settings)             TYPE lvc_s_glay OPTIONAL
-        VALUE(is_layout)                    TYPE lvc_s_layo OPTIONAL
-        VALUE(it_fieldcat)                  TYPE lvc_t_fcat OPTIONAL
-        VALUE(it_excluding)                 TYPE slis_t_extab OPTIONAL
-        VALUE(it_specl_grps)                TYPE lvc_t_sgrp OPTIONAL
-        VALUE(it_sort)                      TYPE lvc_t_sort OPTIONAL
-        VALUE(it_filter)                    TYPE lvc_t_filt OPTIONAL
-        VALUE(iv_default)                   TYPE char1 DEFAULT abap_true
-        VALUE(iv_save)                      TYPE char1 DEFAULT abap_true
-        VALUE(is_variant)                   TYPE disvariant OPTIONAL
-        VALUE(it_event)                     TYPE slis_t_event OPTIONAL
-        VALUE(it_event_exit)                TYPE slis_t_event_exit OPTIONAL
-        VALUE(iv_screen_start_column)       TYPE i OPTIONAL
-        VALUE(iv_screen_start_line)         TYPE i OPTIONAL
-        VALUE(iv_screen_end_column)         TYPE i OPTIONAL
-        VALUE(iv_screen_end_line)           TYPE i OPTIONAL
-        VALUE(iv_html_height_top)           TYPE i OPTIONAL
-        VALUE(iv_html_height_end)           TYPE i OPTIONAL
-        VALUE(iv_stack_name)                TYPE dfies-tabname OPTIONAL
-        VALUE(iv_destroy_current_view)      TYPE flag DEFAULT abap_true
-      CHANGING
-        !ct_data                            TYPE table OPTIONAL
-      RETURNING
-        VALUE(ro_view)                      TYPE REF TO zcl_mvcfw_base_lvc_view
-      RAISING
-        zbcx_exception .
-    METHODS set_top_page_html
-      IMPORTING
-        !io_dd_doc TYPE REF TO cl_dd_document .
-    METHODS modify_fcat
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_fcat       TYPE lvc_t_fcat .
-    METHODS modify_layout
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !cs_layo       TYPE lvc_s_layo .
-    METHODS modify_events
-      IMPORTING
-        !it_fcat             TYPE lvc_t_fcat OPTIONAL
-        !iv_evt_data_changed TYPE abap_bool OPTIONAL
-        !iv_stack_name       TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_event            TYPE slis_t_event .
-    METHODS modify_sort
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_sort       TYPE lvc_t_sort .
-    METHODS modify_alv_settings
-      IMPORTING
-        !iv_stack_name     TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !cs_grid_title     TYPE lvc_title OPTIONAL
-        !cs_grid_settings  TYPE lvc_s_glay OPTIONAL
-        !ct_excluding      TYPE slis_t_extab OPTIONAL
-        !ct_special_groups TYPE lvc_t_sgrp OPTIONAL
-        !ct_sort           TYPE lvc_t_sort OPTIONAL
-        !ct_filter         TYPE lvc_t_filt OPTIONAL
-        !cv_default        TYPE char1 OPTIONAL
-        !cv_save           TYPE char1 OPTIONAL
-        !cs_variant        TYPE disvariant OPTIONAL .
-    METHODS get_fieldcat
-      RETURNING
-        VALUE(rt_fieldcat_lvc) TYPE lvc_t_fcat .
-    METHODS set_fieldcat
-      IMPORTING
-        !it_fieldcat_lvc TYPE lvc_t_fcat .
-    METHODS get_layout
-      RETURNING
-        VALUE(rs_layo) TYPE lvc_s_layo .
-    METHODS set_layout
-      IMPORTING
-        !is_layo TYPE lvc_s_layo .
-    METHODS set_stack_name
-      IMPORTING
-        !iv_stack_name TYPE dfies-tabname DEFAULT mc_stack_main .
-    METHODS set_fcat_text
-      IMPORTING
-        !iv_text      TYPE any OPTIONAL
-        !iv_scrtext_l TYPE lvc_s_fcat-scrtext_l OPTIONAL
-        !iv_scrtext_m TYPE lvc_s_fcat-scrtext_m OPTIONAL
-        !iv_scrtext_s TYPE lvc_s_fcat-scrtext_s OPTIONAL
-        !iv_reptext   TYPE lvc_s_fcat-reptext OPTIONAL
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_fcat_checkbox
-      IMPORTING
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_fcat_technical
-      IMPORTING
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_fcat_hidden
-      IMPORTING
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_fcat_key
-      IMPORTING
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_fcat_freeze_column
-      IMPORTING
-        !iv_fieldname TYPE lvc_s_fcat-fieldname OPTIONAL
-      CHANGING
-        !cs_fcat      TYPE lvc_s_fcat OPTIONAL
-        !ct_fcat      TYPE lvc_t_fcat OPTIONAL .
-    METHODS set_checkbox_value
-      IMPORTING
-        !iv_value     TYPE char01 OPTIONAL
-        !iv_fieldname TYPE lvc_s_fcat-fieldname
-        !iv_tabindex  TYPE sy-tabix
-        !io_model     TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-      CHANGING
-        !cs_selfield  TYPE slis_selfield OPTIONAL .
-    METHODS get_globals_from_slvc_fullscr
-      EXPORTING
-        VALUE(et_excluding)        TYPE slis_t_extab
-        VALUE(ev_callback_program) TYPE sy-repid
-        VALUE(ev_callback_routine) TYPE slis_formname
-        VALUE(eo_grid)             TYPE REF TO cl_gui_alv_grid
-        VALUE(et_fieldcat)         TYPE lvc_t_fcat
-        VALUE(ev_flg_no_html)      TYPE c
-        VALUE(es_layout)           TYPE lvc_s_layo
-        VALUE(es_sel_hide)         TYPE slis_sel_hide_alv
-        VALUE(et_event_exit)       TYPE kkblo_t_event_exit .
-    METHODS check_changed_data_in_ucomm .
-    METHODS destroy_view
-      IMPORTING
-        !iv_name         TYPE dfies-tabname OPTIONAL
-        !iv_current_name TYPE dfies-tabname OPTIONAL .
-    CLASS-METHODS transfer_lvc_to_slis
-      IMPORTING
-        !it_fieldcat_lvc TYPE lvc_t_fcat OPTIONAL
-        !it_sort_lvc     TYPE lvc_t_sort OPTIONAL
-        !it_filter_lvc   TYPE lvc_t_filt OPTIONAL
-        !is_layout_lvc   TYPE lvc_s_layo OPTIONAL
-      EXPORTING
-        !et_fieldcat_alv TYPE slis_t_fieldcat_alv
-        !et_sort_alv     TYPE slis_t_sortinfo_alv
-        !et_filter_alv   TYPE slis_t_filter_alv
-        !es_layout_alv   TYPE slis_layout_alv
-      CHANGING
-        !ct_data         TYPE STANDARD TABLE OPTIONAL .
-    CLASS-METHODS export_view_data_to_xls
-      IMPORTING
-        VALUE(it_data)     TYPE table
-        VALUE(iv_filename) TYPE string OPTIONAL
-        VALUE(iv_execute)  TYPE abap_bool DEFAULT abap_true
-      RAISING
-        zbcx_exception .
-    METHODS set_default_grid_handler
-      IMPORTING
-        !io_view TYPE REF TO zcl_mvcfw_base_lvc_view OPTIONAL .
-    METHODS handle_grid_user_command
-      FOR EVENT user_command OF cl_gui_alv_grid
-      IMPORTING
-        !e_ucomm .
-    METHODS handle_grid_toolbar
-      FOR EVENT toolbar OF cl_gui_alv_grid
-      IMPORTING
-        !e_object
-        !e_interactive .
-    METHODS handle_grid_double_click
-      FOR EVENT double_click OF cl_gui_alv_grid
-      IMPORTING
-        !e_row
-        !e_column
-        !es_row_no .
-    METHODS handle_grid_hotspot_click
-      FOR EVENT hotspot_click OF cl_gui_alv_grid
-      IMPORTING
-        !e_row_id
-        !e_column_id
-        !es_row_no .
-    METHODS handle_grid_data_changed
-      FOR EVENT data_changed OF cl_gui_alv_grid
-      IMPORTING
-        !er_data_changed
-        !e_onf4
-        !e_onf4_before
-        !e_onf4_after
-        !e_ucomm .
-    METHODS handle_grid_changed_finished
-      FOR EVENT data_changed_finished OF cl_gui_alv_grid
-      IMPORTING
-        !e_modified
-        !et_good_cells .
-    METHODS set_grid_handler_before_disp
-      IMPORTING
-        !io_view                 TYPE REF TO zcl_mvcfw_base_lvc_view OPTIONAL
-        VALUE(iv_set_oo_toolbar) TYPE flag OPTIONAL
-      RETURNING
-        VALUE(ro_view)           TYPE REF TO zcl_mvcfw_base_lvc_view .
-    METHODS set_controller_to_view
-      IMPORTING
-        !io_controller TYPE REF TO zcl_mvcfw_base_lvc_controller
-      RETURNING
-        VALUE(ro_view) TYPE REF TO zcl_mvcfw_base_lvc_view .
-    METHODS set_model_to_view
-      IMPORTING
-        !io_model      TYPE REF TO zcl_mvcfw_base_lvc_model
-      RETURNING
-        VALUE(ro_view) TYPE REF TO zcl_mvcfw_base_lvc_view .
+  methods CONSTRUCTOR
+    importing
+      !IV_CNTL_NAME type SEOCLSNAME optional
+      !IV_VIEW_NAME type SEOCLSNAME optional .
+  methods PREPARE_DISPLAY
+    importing
+      !IV_REPID type SY-CPROG default SY-CPROG
+      !IV_SET_PF_STATUS type SLIS_FORMNAME optional
+      !IV_USER_COMMAND type SLIS_FORMNAME optional
+      !IV_CALLBACK_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_END_OF_LIST type SLIS_FORMNAME optional
+      !IS_GRID_TITLE type LVC_TITLE optional
+      !IS_GRID_SETTINGS type LVC_S_GLAY optional
+      !IS_LAYOUT type LVC_S_LAYO optional
+      !IT_FIELDCAT type LVC_T_FCAT optional
+      !IT_EXCLUDING type SLIS_T_EXTAB optional
+      !IT_SPECIAL_GROUPS type LVC_T_SGRP optional
+      !IT_SORT type LVC_T_SORT optional
+      !IT_FILTER type LVC_T_FILT optional
+      !IV_DEFAULT type CHAR1 optional
+      !IV_SAVE type CHAR1 optional
+      !IS_VARIANT type DISVARIANT optional
+      !IT_EVENT type SLIS_T_EVENT optional
+    exporting
+      !EV_SET_PF_STATUS type SLIS_FORMNAME
+      !EV_USER_COMMAND type SLIS_FORMNAME
+      !EV_CALLBACK_TOP_OF_PAGE type SLIS_FORMNAME
+      !EV_CALLBACK_HTML_TOP_OF_PAGE type SLIS_FORMNAME
+      !EV_CALLBACK_HTML_END_OF_LIST type SLIS_FORMNAME
+      !ES_GRID_TITLE type LVC_TITLE
+      !ES_GRID_SETTINGS type LVC_S_GLAY
+      !ES_LAYOUT type LVC_S_LAYO
+      !ET_FIELDCAT type LVC_T_FCAT
+      !ET_EXCLUDING type SLIS_T_EXTAB
+      !ET_SPECIAL_GROUPS type LVC_T_SGRP
+      !ET_SORT type LVC_T_SORT
+      !ET_FILTER type LVC_T_FILT
+      !EV_DEFAULT type CHAR1
+      !EV_SAVE type CHAR1
+      !ES_VARIANT type DISVARIANT
+      !ET_EVENT type SLIS_T_EVENT
+    changing
+      !CT_DATA type TABLE optional .
+  methods DISPLAY
+    importing
+      value(IV_REPID) type SY-CPROG default SY-CPROG
+      value(IV_SET_PF_STATUS) type SLIS_FORMNAME optional
+      value(IV_USER_COMMAND) type SLIS_FORMNAME optional
+      value(IV_CALLBACK_TOP_OF_PAGE) type SLIS_FORMNAME optional
+      value(IV_CALLBACK_HTML_TOP_OF_PAGE) type SLIS_FORMNAME optional
+      value(IV_CALLBACK_HTML_END_OF_LIST) type SLIS_FORMNAME optional
+      value(IS_GRID_TITLE) type LVC_TITLE optional
+      value(IS_GRID_SETTINGS) type LVC_S_GLAY optional
+      value(IS_LAYOUT) type LVC_S_LAYO optional
+      value(IT_FIELDCAT) type LVC_T_FCAT optional
+      value(IT_EXCLUDING) type SLIS_T_EXTAB optional
+      value(IT_SPECL_GRPS) type LVC_T_SGRP optional
+      value(IT_SORT) type LVC_T_SORT optional
+      value(IT_FILTER) type LVC_T_FILT optional
+      value(IV_DEFAULT) type CHAR1 optional
+      value(IV_SAVE) type CHAR1 optional
+      value(IS_VARIANT) type DISVARIANT optional
+      value(IT_EVENT) type SLIS_T_EVENT optional
+      value(IT_EVENT_EXIT) type SLIS_T_EVENT_EXIT optional
+      value(IV_SCREEN_START_COLUMN) type I optional
+      value(IV_SCREEN_START_LINE) type I optional
+      value(IV_SCREEN_END_COLUMN) type I optional
+      value(IV_SCREEN_END_LINE) type I optional
+      value(IV_HTML_HEIGHT_TOP) type I optional
+      value(IV_HTML_HEIGHT_END) type I optional
+    changing
+      !CT_DATA type TABLE
+    raising
+      ZBCX_EXCEPTION .
+  methods SET_PF_STATUS
+    importing
+      value(IT_EXTAB) type SLIS_T_EXTAB optional
+      value(IV_STACK_NAME) type DFIES-TABNAME optional .
+  methods USER_COMMAND
+    importing
+      !IM_UCOMM type SY-UCOMM
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CS_SELFIELD type SLIS_SELFIELD optional .
+  methods CHECK_CHANGED_DATA
+    importing
+      !IO_DATA_CHANGED type ref to CL_ALV_CHANGED_DATA_PROTOCOL
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_DATA type ref to DATA optional .
+  methods REGISTER_EVENT
+    importing
+      !IV_EVT_MODIFIED type FLAG optional
+      !IV_EVT_ENTER type FLAG optional
+      !IV_SET_OO_TOOLBAR type FLAG optional
+    exporting
+      !EO_GRID type ref to CL_GUI_ALV_GRID
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods REFRESH_TABLE_DISPLAY
+    importing
+      value(IS_STABLE) type LVC_S_STBL optional
+      value(IV_SOFT_REFRESH) type CHAR01 optional .
+  methods REFRESH_ALV_SELFIELD
+    importing
+      !IV_SOFT_REFRESH type CHAR01 optional
+    changing
+      !CS_SELFIELD type SLIS_SELFIELD .
+  methods CREATE_NEW_VIEW_TO_CONTROLLER
+    importing
+      value(IV_STACK_NAME) type DFIES-TABNAME
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional
+      !IR_ACTION type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION optional
+    exporting
+      !EO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW
+    raising
+      ZBCX_EXCEPTION .
+  methods DISPLAY_SUB_ALV
+    importing
+      value(IV_REPID) type SY-CPROG default SY-CPROG
+      value(IV_SET_PF_STATUS) type SLIS_FORMNAME default 'SET_PF_STATUS'
+      value(IV_USER_COMMAND) type SLIS_FORMNAME default 'USER_COMMAND'
+      value(IV_CALLBACK_TOP_OF_PAGE) type SLIS_FORMNAME optional
+      value(IV_CALLBACK_HTML_TOP_OF_PAGE) type SLIS_FORMNAME optional
+      value(IV_CALLBACK_HTML_END_OF_LIST) type SLIS_FORMNAME optional
+      value(IS_GRID_TITLE) type LVC_TITLE optional
+      value(IS_GRID_SETTINGS) type LVC_S_GLAY optional
+      value(IS_LAYOUT) type LVC_S_LAYO optional
+      value(IT_FIELDCAT) type LVC_T_FCAT optional
+      value(IT_EXCLUDING) type SLIS_T_EXTAB optional
+      value(IT_SPECL_GRPS) type LVC_T_SGRP optional
+      value(IT_SORT) type LVC_T_SORT optional
+      value(IT_FILTER) type LVC_T_FILT optional
+      value(IV_DEFAULT) type CHAR1 default ABAP_TRUE
+      value(IV_SAVE) type CHAR1 default ABAP_TRUE
+      value(IS_VARIANT) type DISVARIANT optional
+      value(IT_EVENT) type SLIS_T_EVENT optional
+      value(IT_EVENT_EXIT) type SLIS_T_EVENT_EXIT optional
+      value(IV_SCREEN_START_COLUMN) type I optional
+      value(IV_SCREEN_START_LINE) type I optional
+      value(IV_SCREEN_END_COLUMN) type I optional
+      value(IV_SCREEN_END_LINE) type I optional
+      value(IV_HTML_HEIGHT_TOP) type I optional
+      value(IV_HTML_HEIGHT_END) type I optional
+      value(IV_STACK_NAME) type DFIES-TABNAME optional
+      value(IV_DESTROY_CURRENT_VIEW) type FLAG default ABAP_TRUE
+    changing
+      !CT_DATA type TABLE optional
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW
+    raising
+      ZBCX_EXCEPTION .
+  methods SET_TOP_PAGE_HTML
+    importing
+      !IO_DD_DOC type ref to CL_DD_DOCUMENT .
+  methods MODIFY_FCAT
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_FCAT type LVC_T_FCAT .
+  methods MODIFY_LAYOUT
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CS_LAYO type LVC_S_LAYO .
+  methods MODIFY_EVENTS
+    importing
+      !IT_FCAT type LVC_T_FCAT optional
+      !IV_EVT_DATA_CHANGED type ABAP_BOOL optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_EVENT type SLIS_T_EVENT .
+  methods MODIFY_SORT
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_SORT type LVC_T_SORT .
+  methods MODIFY_ALV_SETTINGS
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CS_GRID_TITLE type LVC_TITLE optional
+      !CS_GRID_SETTINGS type LVC_S_GLAY optional
+      !CT_EXCLUDING type SLIS_T_EXTAB optional
+      !CT_SPECIAL_GROUPS type LVC_T_SGRP optional
+      !CT_SORT type LVC_T_SORT optional
+      !CT_FILTER type LVC_T_FILT optional
+      !CV_DEFAULT type CHAR1 optional
+      !CV_SAVE type CHAR1 optional
+      !CS_VARIANT type DISVARIANT optional .
+  methods GET_FIELDCAT
+    returning
+      value(RT_FIELDCAT_LVC) type LVC_T_FCAT .
+  methods SET_FIELDCAT
+    importing
+      !IT_FIELDCAT_LVC type LVC_T_FCAT .
+  methods GET_LAYOUT
+    returning
+      value(RS_LAYO) type LVC_S_LAYO .
+  methods SET_LAYOUT
+    importing
+      !IS_LAYO type LVC_S_LAYO .
+  methods SET_STACK_NAME
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME default MC_STACK_MAIN .
+  methods SET_FCAT_TEXT
+    importing
+      !IV_TEXT type ANY optional
+      !IV_SCRTEXT_L type LVC_S_FCAT-SCRTEXT_L optional
+      !IV_SCRTEXT_M type LVC_S_FCAT-SCRTEXT_M optional
+      !IV_SCRTEXT_S type LVC_S_FCAT-SCRTEXT_S optional
+      !IV_REPTEXT type LVC_S_FCAT-REPTEXT optional
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_FCAT_CHECKBOX
+    importing
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_FCAT_TECHNICAL
+    importing
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_FCAT_HIDDEN
+    importing
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_FCAT_KEY
+    importing
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_FCAT_FREEZE_COLUMN
+    importing
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME optional
+    changing
+      !CS_FCAT type LVC_S_FCAT optional
+      !CT_FCAT type LVC_T_FCAT optional .
+  methods SET_CHECKBOX_VALUE
+    importing
+      !IV_VALUE type CHAR01 optional
+      !IV_FIELDNAME type LVC_S_FCAT-FIELDNAME
+      !IV_TABINDEX type SY-TABIX
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+    changing
+      !CS_SELFIELD type SLIS_SELFIELD optional .
+  methods GET_GLOBALS_FROM_SLVC_FULLSCR
+    exporting
+      value(ET_EXCLUDING) type SLIS_T_EXTAB
+      value(EV_CALLBACK_PROGRAM) type SY-REPID
+      value(EV_CALLBACK_ROUTINE) type SLIS_FORMNAME
+      value(EO_GRID) type ref to CL_GUI_ALV_GRID
+      value(ET_FIELDCAT) type LVC_T_FCAT
+      value(EV_FLG_NO_HTML) type C
+      value(ES_LAYOUT) type LVC_S_LAYO
+      value(ES_SEL_HIDE) type SLIS_SEL_HIDE_ALV
+      value(ET_EVENT_EXIT) type KKBLO_T_EVENT_EXIT .
+  methods CHECK_CHANGED_DATA_IN_UCOMM .
+  methods DESTROY_VIEW
+    importing
+      !IV_NAME type DFIES-TABNAME optional
+      !IV_CURRENT_NAME type DFIES-TABNAME optional .
+  class-methods TRANSFER_LVC_TO_SLIS
+    importing
+      !IT_FIELDCAT_LVC type LVC_T_FCAT optional
+      !IT_SORT_LVC type LVC_T_SORT optional
+      !IT_FILTER_LVC type LVC_T_FILT optional
+      !IS_LAYOUT_LVC type LVC_S_LAYO optional
+    exporting
+      !ET_FIELDCAT_ALV type SLIS_T_FIELDCAT_ALV
+      !ET_SORT_ALV type SLIS_T_SORTINFO_ALV
+      !ET_FILTER_ALV type SLIS_T_FILTER_ALV
+      !ES_LAYOUT_ALV type SLIS_LAYOUT_ALV
+    changing
+      !CT_DATA type STANDARD TABLE optional .
+  class-methods EXPORT_VIEW_DATA_TO_XLS
+    importing
+      value(IT_DATA) type TABLE
+      value(IV_FILENAME) type STRING optional
+      value(IV_EXECUTE) type ABAP_BOOL default ABAP_TRUE
+    raising
+      ZBCX_EXCEPTION .
+  methods SET_DEFAULT_GRID_HANDLER
+    importing
+      !IO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW optional .
+  methods HANDLE_GRID_USER_COMMAND
+    for event USER_COMMAND of CL_GUI_ALV_GRID
+    importing
+      !E_UCOMM .
+  methods HANDLE_GRID_TOOLBAR
+    for event TOOLBAR of CL_GUI_ALV_GRID
+    importing
+      !E_OBJECT
+      !E_INTERACTIVE .
+  methods HANDLE_GRID_DOUBLE_CLICK
+    for event DOUBLE_CLICK of CL_GUI_ALV_GRID
+    importing
+      !E_ROW
+      !E_COLUMN
+      !ES_ROW_NO .
+  methods HANDLE_GRID_HOTSPOT_CLICK
+    for event HOTSPOT_CLICK of CL_GUI_ALV_GRID
+    importing
+      !E_ROW_ID
+      !E_COLUMN_ID
+      !ES_ROW_NO .
+  methods HANDLE_GRID_DATA_CHANGED
+    for event DATA_CHANGED of CL_GUI_ALV_GRID
+    importing
+      !ER_DATA_CHANGED
+      !E_ONF4
+      !E_ONF4_BEFORE
+      !E_ONF4_AFTER
+      !E_UCOMM .
+  methods HANDLE_GRID_CHANGED_FINISHED
+    for event DATA_CHANGED_FINISHED of CL_GUI_ALV_GRID
+    importing
+      !E_MODIFIED
+      !ET_GOOD_CELLS .
+  methods SET_GRID_HANDLER_BEFORE_DISP
+    importing
+      !IO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW optional
+      value(IV_SET_OO_TOOLBAR) type FLAG optional
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods SET_CONTROLLER_TO_VIEW
+    importing
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods SET_MODEL_TO_VIEW
+    importing
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods AUTO_GENERATE_STACK_NAME
+    returning
+      value(RV_STACK_NAME) type DFIES-TABNAME .
   PROTECTED SECTION.
 
     DATA lmv_repid TYPE sy-cprog .
@@ -491,29 +494,26 @@ CLASS zcl_mvcfw_base_lvc_view DEFINITION
       IMPORTING
         !e_object      TYPE REF TO cl_alv_event_toolbar_set
         !e_interactive TYPE char01 .
-  PRIVATE SECTION.
+private section.
 
-    METHODS _check_routine
-      IMPORTING
-        !iv_formname    TYPE slis_formname
-      EXPORTING
-        VALUE(ev_found) TYPE flag .
-    METHODS _create_any_object
-      IMPORTING
-        VALUE(iv_class_name) TYPE char30 DEFAULT mc_deflt_view
-      RETURNING
-        VALUE(ro_class)      TYPE REF TO object .
-    METHODS _create_salv_tree_object
-      IMPORTING
-        !iv_create_tree_directly TYPE sap_bool OPTIONAL
-      CHANGING
-        !ct_data                 TYPE STANDARD TABLE OPTIONAL
-      RETURNING
-        VALUE(ro_tree)           TYPE REF TO cl_salv_tree .
-    METHODS _auto_gen_stack_name
-      RETURNING
-        VALUE(rv_stack_name) TYPE dfies-tabname .
-    METHODS _set_local_layout_fulscr_grid .
+  methods _CHECK_ROUTINE
+    importing
+      !IV_FORMNAME type SLIS_FORMNAME
+    exporting
+      value(EV_FOUND) type FLAG .
+  methods _CREATE_ANY_OBJECT
+    importing
+      value(IV_CLASS_NAME) type CHAR30 default MC_DEFLT_VIEW
+    returning
+      value(RO_CLASS) type ref to OBJECT .
+  methods _CREATE_SALV_TREE_OBJECT
+    importing
+      !IV_CREATE_TREE_DIRECTLY type SAP_BOOL optional
+    changing
+      !CT_DATA type STANDARD TABLE optional
+    returning
+      value(RO_TREE) type ref to CL_SALV_TREE .
+  methods _SET_LOCAL_LAYOUT_FULSCR_GRID .
 ENDCLASS.
 
 
@@ -1670,45 +1670,6 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _auto_gen_stack_name.
-    DATA: lc_stack_sub_init TYPE dfies-tabname VALUE 'SUB01',
-          lc_stack_sub      TYPE dfies-tabname VALUE 'SUB'.
-    DATA: lv_next_stack TYPE n LENGTH 2,
-          lv_htype      TYPE dd01v-datatype.
-
-    DATA(lt_stack) = zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->get_all_stack( ).
-
-    IF NOT line_exists( lt_stack[ KEY k2 COMPONENTS name = mc_stack_main ] ).
-      rv_stack_name = mc_stack_main.
-    ELSE.
-      LOOP AT lt_stack INTO DATA(ls_stack) WHERE name CP |{ lc_stack_sub }*|.
-        EXIT.
-      ENDLOOP.
-      IF sy-subrc EQ 0.
-        DELETE lt_stack WHERE NOT name CP |{ lc_stack_sub }*|.
-        SORT lt_stack BY name DESCENDING.
-
-        TRY.
-            lv_next_stack = substring_after( val = lt_stack[ 1 ]-name  sub = lc_stack_sub ).
-
-            CALL FUNCTION 'NUMERIC_CHECK'
-              EXPORTING
-                string_in = lv_next_stack
-              IMPORTING
-                htype     = lv_htype.
-
-            lv_next_stack = COND #( WHEN lv_htype EQ 'NUMC' THEN lv_next_stack + 1 ELSE '01' ).
-            rv_stack_name = |{ lc_stack_sub }{ lv_next_stack }|.
-          CATCH cx_sy_itab_line_not_found.
-            rv_stack_name = lc_stack_sub_init.
-        ENDTRY.
-      ELSE.
-        rv_stack_name = lc_stack_sub_init.
-      ENDIF.
-    ENDIF.
-  ENDMETHOD.
-
-
   METHOD _call_alv_grid_display_lvc.
     CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY_LVC'
       EXPORTING
@@ -2291,5 +2252,44 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
     "Set Fullscreen Layout
     _set_globals_fullscreen_grid( EXPORTING is_lvc_layout = ls_lvc_layout ).
+  ENDMETHOD.
+
+
+  METHOD auto_generate_stack_name.
+    DATA: lc_stack_sub_init TYPE dfies-tabname VALUE 'SUB01',
+          lc_stack_sub      TYPE dfies-tabname VALUE 'SUB'.
+    DATA: lv_next_stack TYPE n LENGTH 2,
+          lv_htype      TYPE dd01v-datatype.
+
+    DATA(lt_stack) = zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->get_all_stack( ).
+
+    IF NOT line_exists( lt_stack[ KEY k2 COMPONENTS name = mc_stack_main ] ).
+      rv_stack_name = mc_stack_main.
+    ELSE.
+      LOOP AT lt_stack INTO DATA(ls_stack) WHERE name CP |{ lc_stack_sub }*|.
+        EXIT.
+      ENDLOOP.
+      IF sy-subrc EQ 0.
+        DELETE lt_stack WHERE NOT name CP |{ lc_stack_sub }*|.
+        SORT lt_stack BY name DESCENDING.
+
+        TRY.
+            lv_next_stack = substring_after( val = lt_stack[ 1 ]-name  sub = lc_stack_sub ).
+
+            CALL FUNCTION 'NUMERIC_CHECK'
+              EXPORTING
+                string_in = lv_next_stack
+              IMPORTING
+                htype     = lv_htype.
+
+            lv_next_stack = COND #( WHEN lv_htype EQ 'NUMC' THEN lv_next_stack + 1 ELSE '01' ).
+            rv_stack_name = |{ lc_stack_sub }{ lv_next_stack }|.
+          CATCH cx_sy_itab_line_not_found.
+            rv_stack_name = lc_stack_sub_init.
+        ENDTRY.
+      ELSE.
+        rv_stack_name = lc_stack_sub_init.
+      ENDIF.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

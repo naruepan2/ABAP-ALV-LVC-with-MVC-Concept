@@ -207,52 +207,51 @@ CLASS zcl_mvcfw_base_lvc_controller DEFINITION
         !ir_action           TYPE REF TO ty_lvc_view_action
       RETURNING
         VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
-  PROTECTED SECTION.
+protected section.
 
-    DATA lmt_stack_called TYPE tty_stack_name .
-    DATA lmt_stack TYPE tty_stack .
-    CONSTANTS lmc_obj_model TYPE seoclsname VALUE 'MODEL' ##NO_TEXT.
-    CONSTANTS lmc_obj_view TYPE seoclsname VALUE 'VIEW' ##NO_TEXT.
-    DATA lmv_cl_view_name TYPE char30 .
-    DATA lmv_cl_modl_name TYPE char30 .
-    DATA lmv_cl_sscr_name TYPE char30 .
-    DATA lmv_cl_cntl_name TYPE char30 .
-    DATA lms_selfield TYPE slis_selfield .
-    DATA lmv_current_stack TYPE dfies-tabname VALUE mc_stack_main ##NO_TEXT.
+  data LMT_STACK_CALLED type TTY_STACK_NAME .
+  data LMT_STACK type TTY_STACK .
+  constants LMC_OBJ_MODEL type SEOCLSNAME value 'MODEL' ##NO_TEXT.
+  constants LMC_OBJ_VIEW type SEOCLSNAME value 'VIEW' ##NO_TEXT.
+  data LMV_CL_VIEW_NAME type CHAR30 .
+  data LMV_CL_MODL_NAME type CHAR30 .
+  data LMV_CL_SSCR_NAME type CHAR30 .
+  data LMV_CL_CNTL_NAME type CHAR30 .
+  data LMV_CURRENT_STACK type DFIES-TABNAME value MC_STACK_MAIN ##NO_TEXT.
 
-    METHODS _set_event_handler_for_control .
-    METHODS _display_lvc_grid
-      IMPORTING
-        !iv_repid                     TYPE sy-cprog DEFAULT sy-cprog
-        !iv_set_pf_status             TYPE slis_formname DEFAULT 'SET_PF_STATUS'
-        !iv_user_command              TYPE slis_formname DEFAULT 'USER_COMMAND'
-        !iv_callback_top_of_page      TYPE slis_formname OPTIONAL
-        !iv_callback_html_top_of_page TYPE slis_formname OPTIONAL
-        !iv_callback_html_end_of_list TYPE slis_formname OPTIONAL
-        !is_grid_title                TYPE lvc_title OPTIONAL
-        !is_grid_settings             TYPE lvc_s_glay OPTIONAL
-        !is_layout                    TYPE lvc_s_layo OPTIONAL
-        !it_fieldcat                  TYPE lvc_t_fcat OPTIONAL
-        !it_excluding                 TYPE slis_t_extab OPTIONAL
-        !it_specl_grps                TYPE lvc_t_sgrp OPTIONAL
-        !it_sort                      TYPE lvc_t_sort OPTIONAL
-        !it_filter                    TYPE lvc_t_filt OPTIONAL
-        !iv_default                   TYPE char1 DEFAULT abap_true
-        !iv_save                      TYPE char1 DEFAULT abap_true
-        !is_variant                   TYPE disvariant OPTIONAL
-        !it_event                     TYPE slis_t_event OPTIONAL
-        !it_event_exit                TYPE slis_t_event_exit OPTIONAL
-        !iv_screen_start_column       TYPE i OPTIONAL
-        !iv_screen_start_line         TYPE i OPTIONAL
-        !iv_screen_end_column         TYPE i OPTIONAL
-        !iv_screen_end_line           TYPE i OPTIONAL
-        !iv_html_height_top           TYPE i OPTIONAL
-        !iv_html_height_end           TYPE i OPTIONAL
-        !iv_stack_name                TYPE dfies-tabname OPTIONAL
-      CHANGING
-        !ct_data                      TYPE table OPTIONAL
-      RAISING
-        zbcx_exception .
+  methods _SET_EVENT_HANDLER_FOR_CONTROL .
+  methods _DISPLAY_LVC_GRID
+    importing
+      !IV_REPID type SY-CPROG default SY-CPROG
+      !IV_SET_PF_STATUS type SLIS_FORMNAME default 'SET_PF_STATUS'
+      !IV_USER_COMMAND type SLIS_FORMNAME default 'USER_COMMAND'
+      !IV_CALLBACK_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_TOP_OF_PAGE type SLIS_FORMNAME optional
+      !IV_CALLBACK_HTML_END_OF_LIST type SLIS_FORMNAME optional
+      !IS_GRID_TITLE type LVC_TITLE optional
+      !IS_GRID_SETTINGS type LVC_S_GLAY optional
+      !IS_LAYOUT type LVC_S_LAYO optional
+      !IT_FIELDCAT type LVC_T_FCAT optional
+      !IT_EXCLUDING type SLIS_T_EXTAB optional
+      !IT_SPECL_GRPS type LVC_T_SGRP optional
+      !IT_SORT type LVC_T_SORT optional
+      !IT_FILTER type LVC_T_FILT optional
+      !IV_DEFAULT type CHAR1 default ABAP_TRUE
+      !IV_SAVE type CHAR1 default ABAP_TRUE
+      !IS_VARIANT type DISVARIANT optional
+      !IT_EVENT type SLIS_T_EVENT optional
+      !IT_EVENT_EXIT type SLIS_T_EVENT_EXIT optional
+      !IV_SCREEN_START_COLUMN type I optional
+      !IV_SCREEN_START_LINE type I optional
+      !IV_SCREEN_END_COLUMN type I optional
+      !IV_SCREEN_END_LINE type I optional
+      !IV_HTML_HEIGHT_TOP type I optional
+      !IV_HTML_HEIGHT_END type I optional
+      !IV_STACK_NAME type DFIES-TABNAME optional
+    changing
+      !CT_DATA type TABLE optional
+    raising
+      ZBCX_EXCEPTION .
   PRIVATE SECTION.
 
     TYPES:
@@ -374,6 +373,9 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
                 lmt_stack        WHERE name EQ ls_stack_called-name.
       ENDIF.
 
+      "--------------------------------------------------------------------"
+      " Read and set previous stack
+      "--------------------------------------------------------------------"
       READ TABLE lmt_stack_called INTO ls_stack_called INDEX lines( lmt_stack_called ).
       IF sy-subrc EQ 0.
         READ TABLE lmt_stack INTO ls_stack
@@ -382,10 +384,12 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         IF sy-subrc EQ 0.
           lmo_static_controller  ?= ls_stack-controller.
           lmo_current_controller ?= ls_stack-controller.
+          lmo_current_model      ?= ls_stack-model.
+          lmo_current_view       ?= ls_stack-view.
 
           set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                    io_model       = ls_stack-model
-                                    io_view        = ls_stack-view
+                                    io_model       = lmo_current_model
+                                    io_view        = lmo_current_view
                                     iv_not_checked = abap_true ).
         ENDIF.
       ENDIF.
@@ -398,6 +402,9 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
                 lmt_stack        WHERE name EQ ls_stack_called-name.
       ENDIF.
 
+      "--------------------------------------------------------------------"
+      " Read and set previous stack
+      "--------------------------------------------------------------------"
       SORT lmt_stack_called BY line.
 
       LOOP AT lmt_stack_called ASSIGNING <lfs_stack_called>.
@@ -418,10 +425,12 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
           IF sy-subrc EQ 0.
             lmo_static_controller  ?= ls_stack-controller.
             lmo_current_controller ?= ls_stack-controller.
+            lmo_current_model      ?= ls_stack-model.
+            lmo_current_view       ?= ls_stack-view.
 
             set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                      io_model       = ls_stack-model
-                                      io_view        = ls_stack-view
+                                      io_model       = lmo_current_model
+                                      io_view        = lmo_current_view
                                       iv_not_checked = abap_true ).
           ENDIF.
         ENDIF.
@@ -432,12 +441,27 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
             WITH KEY k2
               COMPONENTS name = ls_stack_called-name.
           IF sy-subrc EQ 0.
+            lmo_static_controller  ?= ls_stack-controller.
+            lmo_current_controller ?= ls_stack-controller.
+            lmo_current_model      ?= ls_stack-model.
+            lmo_current_view       ?= ls_stack-view.
+
             set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                      io_model       = ls_stack-model
-                                      io_view        = ls_stack-view
+                                      io_model       = lmo_current_model
+                                      io_view        = lmo_current_view
                                       iv_not_checked = abap_true ).
           ENDIF.
         ENDIF.
+      ENDIF.
+    ENDIF.
+
+    "--------------------------------------------------------------------"
+    " Try to replace SALV parameters with previous parameters
+    "--------------------------------------------------------------------"
+    READ TABLE lmt_stack INTO ls_stack WITH KEY is_current = abap_true.
+    IF sy-subrc EQ 0.
+      IF ls_stack-lvc_v_action IS BOUND.
+        me->ms_view_action = ls_stack-lvc_v_action->*.
       ENDIF.
     ENDIF.
   ENDMETHOD.
@@ -637,26 +661,28 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
   METHOD handle_user_command.
     TRY.
+        ms_view_action-selfield = is_selfield.
+
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
           lo_stack->view->user_command( EXPORTING im_ucomm      = im_ucomm
                                                   io_model      = lo_stack->model
                                                   io_controller = lo_stack->controller
                                                   iv_stack_name = lo_stack->name
-                                        CHANGING  cs_selfield   = is_selfield ).
+                                        CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSEIF mo_view IS BOUND.
           mo_view->user_command( EXPORTING im_ucomm      = im_ucomm
                                            io_model      = me->mo_model
                                            io_controller = me
                                            iv_stack_name = lo_stack->name
-                                 CHANGING  cs_selfield   = is_selfield ).
+                                 CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSE.
           DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
           lo_view->user_command( EXPORTING im_ucomm      = im_ucomm
                                            io_model      = me->mo_model
                                            io_controller = me
                                            iv_stack_name = lo_stack->name
-                                 CHANGING  cs_selfield   = is_selfield ).
+                                 CHANGING  cs_selfield   = ms_view_action-selfield ).
         ENDIF.
       CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
         DATA(lv_msg) = lo_dyn_except->get_text( ).
@@ -747,7 +773,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         im_ucomm    = im_ucomm
         is_selfield = cs_selfield.
 
-    cs_selfield = lms_selfield.
+    cs_selfield = ms_view_action-selfield.
   ENDMETHOD.
 
 
