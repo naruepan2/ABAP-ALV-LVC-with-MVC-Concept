@@ -5,33 +5,33 @@ class ZCL_MVCFW_BASE_LVC_CONTROLLER definition
 public section.
 
   types:
-    BEGIN OF ty_lvc_view_action,
+    BEGIN OF ts_lvc_view_action,
         ucomm        TYPE sy-ucomm,
         selfield     TYPE slis_selfield,
         data_changed TYPE REF TO cl_alv_changed_data_protocol,
         cl_dd        TYPE REF TO cl_dd_document,
-      END OF ty_lvc_view_action .
+      END OF ts_lvc_view_action .
   types:
-    BEGIN OF ty_stack,
+    BEGIN OF ts_stack,
         name         TYPE dfies-tabname,
         view         TYPE REF TO zcl_mvcfw_base_lvc_view,
-        lvc_v_action TYPE REF TO ty_lvc_view_action,
+        lvc_v_action TYPE REF TO ts_lvc_view_action,
         model        TYPE REF TO zcl_mvcfw_base_lvc_model,
         controller   TYPE REF TO zcl_mvcfw_base_lvc_controller,
         is_main      TYPE flag,
         is_current   TYPE flag,
         line         TYPE sy-index,
-      END OF ty_stack .
+      END OF ts_stack .
   types:
-    BEGIN OF ty_stack_name,
+    BEGIN OF ts_stack_name,
         line TYPE sy-index,
         name TYPE dfies-tabname,
-      END OF ty_stack_name .
+      END OF ts_stack_name .
   types:
-    tty_stack TYPE TABLE OF ty_stack WITH EMPTY KEY
+    tt_stack TYPE TABLE OF ts_stack WITH EMPTY KEY
                                            WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
   types:
-    tty_stack_name TYPE TABLE OF ty_stack_name WITH EMPTY KEY
+    tt_stack_name TYPE TABLE OF ts_stack_name WITH EMPTY KEY
                                                      WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
 
   constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
@@ -45,7 +45,7 @@ public section.
   data MO_SSCR type ref to ZCL_MVCFW_BASE_SSCR read-only .
   data MO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW read-only .
   data MO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL read-only .
-  data MS_VIEW_ACTION type TY_LVC_VIEW_ACTION read-only .
+  data MS_VIEW_ACTION type ts_lvc_view_action read-only .
 
   events EVT_PF_STATUS
     exporting
@@ -195,22 +195,22 @@ public section.
     importing
       !IV_STACK_NAME type DFIES-TABNAME
     returning
-      value(RS_STACK) type ref to TY_STACK .
+      value(RS_STACK) type ref to ts_stack .
   methods GET_ALL_STACK
     returning
-      value(RT_STACK) type TTY_STACK .
+      value(RT_STACK) type tt_stack .
   methods GET_CURRENT_STACK
     returning
       value(RV_CURRENT_STACK) type DFIES-TABNAME .
   methods SET_VIEW_ACTION
     importing
-      !IR_ACTION type ref to TY_LVC_VIEW_ACTION
+      !IR_ACTION type ref to ts_lvc_view_action
     returning
       value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
 protected section.
 
-  data LMT_STACK_CALLED type TTY_STACK_NAME .
-  data LMT_STACK type TTY_STACK .
+  data LMT_STACK_CALLED type tt_stack_NAME .
+  data LMT_STACK type tt_stack .
   constants LMC_OBJ_MODEL type SEOCLSNAME value 'MODEL' ##NO_TEXT.
   constants LMC_OBJ_VIEW type SEOCLSNAME value 'VIEW' ##NO_TEXT.
   data LMV_CL_VIEW_NAME type CHAR30 .
@@ -290,10 +290,10 @@ protected section.
       IMPORTING
         !iv_name        TYPE dfies-tabname
       RETURNING
-        VALUE(rs_stack) TYPE REF TO ty_stack .
+        VALUE(rs_stack) TYPE REF TO ts_stack .
     METHODS _set_dynp_stack_name
       IMPORTING
-        !io_stack            TYPE REF TO ty_stack
+        !io_stack            TYPE REF TO ts_stack
         !iv_object_name      TYPE dfies-tabname
         !iv_stack_name       TYPE dfies-tabname
       RETURNING

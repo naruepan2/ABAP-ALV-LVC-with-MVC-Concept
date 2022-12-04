@@ -5,12 +5,12 @@ class ZCL_MVCFW_BASE_LVC_MODEL definition
 public section.
 
   types:
-    BEGIN OF ty_incl_outtab_ext,
+    BEGIN OF ts_incl_outtab_ext,
         alv_traff   TYPE bkk_lightcode,  "1=Red, 2=Yellow, 3=Green
         alv_celltab TYPE lvc_t_styl,     "Style Table for Cells
         alv_s_color TYPE char04,         "Simple row color coding
         alv_c_color TYPE lvc_t_scol,     "Complex cell color coding
-      END OF ty_incl_outtab_ext .
+      END OF ts_incl_outtab_ext .
 
   constants:
     BEGIN OF color,
@@ -49,7 +49,7 @@ public section.
   constants MC_STYLE_ENABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_ENABLED ##NO_TEXT.
   constants MC_STYLE_DISABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_DISABLED ##NO_TEXT.
   data MO_MODEL_UTILS type ref to ZCL_MVCFW_BASE_UTILS_MODEL read-only .
-  data MS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION read-only .
+  data MS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION read-only .
 
   methods CONSTRUCTOR .
   methods SELECT_DATA
@@ -120,7 +120,7 @@ public section.
       value(RV_STACK_NAME) type DFIES-TABNAME .
   methods GET_CONTROLLER_ACTION
     importing
-      !IS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION
+      !IS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION
     returning
       value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
   PROTECTED SECTION.

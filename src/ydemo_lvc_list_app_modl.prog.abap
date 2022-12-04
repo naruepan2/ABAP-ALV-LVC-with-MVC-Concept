@@ -11,7 +11,7 @@ CLASS lcl_model DEFINITION INHERITING FROM zcl_mvcfw_base_lvc_model.
     TYPES: BEGIN OF ty_outtab,
              chkbox TYPE flag.
              INCLUDE TYPE spfli.
-             INCLUDE TYPE zcl_mvcfw_base_lvc_model=>ty_incl_outtab_ext.
+             INCLUDE TYPE zcl_mvcfw_base_lvc_model=>ts_incl_outtab_ext.
     TYPES:   END OF ty_outtab.
     TYPES: tty_outtab TYPE TABLE OF ty_outtab WITH EMPTY KEY.
 

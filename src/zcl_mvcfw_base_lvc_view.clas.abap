@@ -149,7 +149,7 @@ public section.
       value(IV_STACK_NAME) type DFIES-TABNAME
       !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
       !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional
-      !IR_ACTION type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER=>TY_LVC_VIEW_ACTION optional
+      !IR_ACTION type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION optional
     exporting
       !EO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER
     returning
