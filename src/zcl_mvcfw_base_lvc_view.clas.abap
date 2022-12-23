@@ -82,8 +82,8 @@ public section.
       value(IT_SPECL_GRPS) type LVC_T_SGRP optional
       value(IT_SORT) type LVC_T_SORT optional
       value(IT_FILTER) type LVC_T_FILT optional
-      value(IV_DEFAULT) type CHAR1 optional
-      value(IV_SAVE) type CHAR1 optional
+      value(IV_DEFAULT) type CHAR1 default ABAP_TRUE
+      value(IV_SAVE) type CHAR1 default 'A'
       value(IS_VARIANT) type DISVARIANT optional
       value(IT_EVENT) type SLIS_T_EVENT optional
       value(IT_EVENT_EXIT) type SLIS_T_EVENT_EXIT optional

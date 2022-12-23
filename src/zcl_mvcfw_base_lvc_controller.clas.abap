@@ -45,7 +45,7 @@ public section.
   data MO_SSCR type ref to ZCL_MVCFW_BASE_SSCR read-only .
   data MO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW read-only .
   data MO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL read-only .
-  data MS_VIEW_ACTION type ts_lvc_view_action read-only .
+  data MS_VIEW_ACTION type TS_LVC_VIEW_ACTION read-only .
 
   events EVT_PF_STATUS
     exporting
@@ -91,7 +91,7 @@ public section.
       !IT_SORT type LVC_T_SORT optional
       !IT_FILTER type LVC_T_FILT optional
       !IV_DEFAULT type CHAR1 default ABAP_TRUE
-      !IV_SAVE type CHAR1 default ABAP_TRUE
+      !IV_SAVE type CHAR1 default 'A'
       !IS_VARIANT type DISVARIANT optional
       !IT_EVENT type SLIS_T_EVENT optional
       !IT_EVENT_EXIT type SLIS_T_EVENT_EXIT optional
@@ -195,22 +195,22 @@ public section.
     importing
       !IV_STACK_NAME type DFIES-TABNAME
     returning
-      value(RS_STACK) type ref to ts_stack .
+      value(RS_STACK) type ref to TS_STACK .
   methods GET_ALL_STACK
     returning
-      value(RT_STACK) type tt_stack .
+      value(RT_STACK) type TT_STACK .
   methods GET_CURRENT_STACK
     returning
       value(RV_CURRENT_STACK) type DFIES-TABNAME .
   methods SET_VIEW_ACTION
     importing
-      !IR_ACTION type ref to ts_lvc_view_action
+      !IR_ACTION type ref to TS_LVC_VIEW_ACTION
     returning
       value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
 protected section.
 
-  data LMT_STACK_CALLED type tt_stack_NAME .
-  data LMT_STACK type tt_stack .
+  data LMT_STACK_CALLED type TT_STACK_NAME .
+  data LMT_STACK type TT_STACK .
   constants LMC_OBJ_MODEL type SEOCLSNAME value 'MODEL' ##NO_TEXT.
   constants LMC_OBJ_VIEW type SEOCLSNAME value 'VIEW' ##NO_TEXT.
   data LMV_CL_VIEW_NAME type CHAR30 .
@@ -237,7 +237,7 @@ protected section.
       !IT_SORT type LVC_T_SORT optional
       !IT_FILTER type LVC_T_FILT optional
       !IV_DEFAULT type CHAR1 default ABAP_TRUE
-      !IV_SAVE type CHAR1 default ABAP_TRUE
+      !IV_SAVE type CHAR1 default 'A'
       !IS_VARIANT type DISVARIANT optional
       !IT_EVENT type SLIS_T_EVENT optional
       !IT_EVENT_EXIT type SLIS_T_EVENT_EXIT optional
