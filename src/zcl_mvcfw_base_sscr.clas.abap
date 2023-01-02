@@ -23,36 +23,6 @@ public section.
       !EV_FILE type STRING
     changing
       !CV_FILENAME type ANY .
-  class-methods F4_ALV_VARIANT
-    importing
-      !IV_REPORT type SY-CPROG default SY-CPROG
-      !IV_USNAME type SY-UNAME default SY-UNAME
-      !IV_SAVE type CHAR1 default ABAP_TRUE
-    changing
-      !CV_VARIANT type DISVARIANT-VARIANT .
-  class-methods F4_SALV_LAYOUTS
-    importing
-      !IS_KEY type SALV_S_LAYOUT_KEY
-      !IV_LAYOUT type SLIS_VARI optional
-      !IV_RESTRICT type SALV_DE_LAYOUT_RESTRICTION default IF_SALV_C_LAYOUT=>RESTRICT_NONE
-    exporting
-      !ES_LAYOUT_INFO type SALV_S_LAYOUT_INFO
-    changing
-      !CV_LAYOUT type SALV_S_LAYOUT_INFO-LAYOUT optional .
-  class-methods GET_ALV_VARIANT_DEFAULT
-    importing
-      !IV_REPORT type SY-CPROG default SY-CPROG
-      !IV_USNAME type SY-UNAME default SY-UNAME
-      !IV_SAVE type CHAR1 default ABAP_TRUE
-    returning
-      value(RV_VARIANT) type DISVARIANT-VARIANT .
-  class-methods GET_SALV_DEFAULT_LAYOUT
-    importing
-      !IS_KEY type SALV_S_LAYOUT_KEY
-      !IV_RESTRICT type SALV_DE_LAYOUT_RESTRICTION default IF_SALV_C_LAYOUT=>RESTRICT_NONE
-      !IV_BYPASS_BUFFER type SAP_BOOL default IF_SALV_C_BOOL_SAP=>FALSE
-    returning
-      value(RV_VALUE) type SALV_S_LAYOUT_INFO .
   methods PBO
     importing
       !IV_DYNNR type SY-DYNNR default SY-DYNNR .
@@ -77,31 +47,6 @@ ENDCLASS.
 
 
 CLASS ZCL_MVCFW_BASE_SSCR IMPLEMENTATION.
-
-
-  METHOD f4_alv_variant.
-    DATA: ls_variant TYPE disvariant.
-    DATA: lv_exit TYPE c.
-
-    ls_variant = VALUE #( report   = COND #( WHEN iv_report IS NOT INITIAL THEN iv_report ELSE sy-cprog )
-                          username = iv_usname ).
-
-    CALL FUNCTION 'LVC_VARIANT_F4'
-      EXPORTING
-        is_variant    = ls_variant
-        i_save        = iv_save
-      IMPORTING
-        e_exit        = lv_exit
-        es_variant    = ls_variant
-      EXCEPTIONS
-        not_found     = 1
-        program_error = 2
-        OTHERS        = 3.
-    IF sy-subrc EQ 0.
-      CHECK lv_exit EQ space.
-      cv_variant = ls_variant-variant.
-    ENDIF.
-  ENDMETHOD.
 
 
   METHOD f4_gui_dialog_applserv.
@@ -148,28 +93,6 @@ CLASS ZCL_MVCFW_BASE_SSCR IMPLEMENTATION.
           cv_filename = lv_serverfile.
         ENDIF.
     ENDCASE.
-  ENDMETHOD.
-
-
-  METHOD get_alv_variant_default.
-    DATA: ls_variant TYPE disvariant.
-
-    ls_variant = VALUE #( report   = COND #( WHEN iv_report IS NOT INITIAL THEN iv_report ELSE sy-cprog )
-                          username = iv_usname ).
-
-    CALL FUNCTION 'LVC_VARIANT_DEFAULT_GET'
-      EXPORTING
-        i_save        = iv_save
-      CHANGING
-        cs_variant    = ls_variant
-      EXCEPTIONS
-        wrong_input   = 1
-        not_found     = 2
-        program_error = 3
-        OTHERS        = 4.
-    IF sy-subrc EQ 0.
-      rv_variant = ls_variant-variant.
-    ENDIF.
   ENDMETHOD.
 
 
@@ -242,38 +165,5 @@ CLASS ZCL_MVCFW_BASE_SSCR IMPLEMENTATION.
 
 
   METHOD constructor.
-  ENDMETHOD.
-
-
-  METHOD f4_salv_layouts.
-    DATA: ls_layout TYPE salv_s_layout_info,
-          ls_key    TYPE salv_s_layout_key.
-
-    ls_key = is_key.
-
-    IF ls_key-report IS INITIAL.
-      ls_key-report = sy-cprog.
-    ENDIF.
-
-    es_layout_info = cl_salv_layout_service=>f4_layouts( s_key    = ls_key
-                                                         layout   = iv_layout
-                                                         restrict = iv_restrict  ).
-    cv_layout = es_layout_info-layout.
-  ENDMETHOD.
-
-
-  METHOD get_salv_default_layout.
-    DATA: ls_layout TYPE salv_s_layout_info,
-          ls_key    TYPE salv_s_layout_key.
-
-    ls_key = is_key.
-
-    IF ls_key-report IS INITIAL.
-      ls_key-report = sy-cprog.
-    ENDIF.
-
-    rv_value = cl_salv_layout_service=>get_default_layout( s_key         = ls_key
-                                                           restrict      = iv_restrict
-                                                           bypass_buffer = iv_bypass_buffer ).
   ENDMETHOD.
 ENDCLASS.
