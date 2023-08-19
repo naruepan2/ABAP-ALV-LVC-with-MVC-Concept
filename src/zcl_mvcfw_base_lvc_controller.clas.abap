@@ -1122,8 +1122,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
   METHOD _get_stack.
     TRY.
-        DATA(ls_stack) = VALUE #( lmt_stack[ KEY k2 COMPONENTS name = iv_name ] ).
-        rs_stack       = REF #( ls_stack ).
+        rs_stack = REF #( lmt_stack[ KEY k2 COMPONENTS name = iv_name ] ).
       CATCH cx_sy_itab_line_not_found.
     ENDTRY.
   ENDMETHOD.
