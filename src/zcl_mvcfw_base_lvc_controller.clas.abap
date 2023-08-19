@@ -252,54 +252,54 @@ protected section.
       !CT_DATA type TABLE optional
     raising
       ZBCX_EXCEPTION .
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF lty_class_type,
+  types:
+    BEGIN OF lty_class_type,
         sscr       TYPE flag,
         model      TYPE flag,
         view       TYPE flag,
         controller TYPE flag,
       END OF lty_class_type .
 
-    CLASS-DATA lmo_static_controller TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    DATA lmo_current_controller TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    DATA lmo_current_model TYPE REF TO zcl_mvcfw_base_lvc_model .
-    DATA lmo_current_view TYPE REF TO zcl_mvcfw_base_lvc_view .
-    DATA lmv_routine_check TYPE flag .
-    CONSTANTS lmc_base_cntl TYPE seoclsname VALUE 'ZCL_MVCFW_BASE_LVC_CONTROLLER' ##NO_TEXT.
-    CONSTANTS lmc_base_model TYPE seoclsname VALUE 'ZCL_MVCFW_BASE_LVC_MODEL' ##NO_TEXT.
-    CONSTANTS lmc_base_view TYPE seoclsname VALUE 'ZCL_MVCFW_BASE_LVC_VIEW' ##NO_TEXT.
-    CONSTANTS lmc_base_sscr TYPE seoclsname VALUE 'ZCL_MVCFW_BASE_SSCR' ##NO_TEXT.
+  class-data LMO_STATIC_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  data LMO_CURRENT_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  data LMO_CURRENT_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  data LMO_CURRENT_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  data LMV_ROUTINE_CHECK type FLAG .
+  constants LMC_BASE_CNTL type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_CONTROLLER' ##NO_TEXT.
+  constants LMC_BASE_MODEL type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_MODEL' ##NO_TEXT.
+  constants LMC_BASE_VIEW type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_VIEW' ##NO_TEXT.
+  constants LMC_BASE_SSCR type SEOCLSNAME value 'ZCL_MVCFW_BASE_SSCR' ##NO_TEXT.
 
-    METHODS _create_any_object
-      IMPORTING
-        !iv_class_name  TYPE seoclsname
-        !is_class_type  TYPE lty_class_type
-      EXPORTING
-        !ev_class_name  TYPE seoclsname
-      RETURNING
-        VALUE(ro_class) TYPE REF TO object .
-    METHODS _build_stack
-      IMPORTING
-        !iv_name       TYPE dfies-tabname
-        !io_model      TYPE REF TO zcl_mvcfw_base_lvc_model OPTIONAL
-        !io_view       TYPE REF TO zcl_mvcfw_base_lvc_view OPTIONAL
-        !io_controller TYPE REF TO zcl_mvcfw_base_lvc_controller OPTIONAL .
-    METHODS _get_stack
-      IMPORTING
-        !iv_name        TYPE dfies-tabname
-      RETURNING
-        VALUE(rs_stack) TYPE REF TO ts_stack .
-    METHODS _set_dynp_stack_name
-      IMPORTING
-        !io_stack            TYPE REF TO ts_stack
-        !iv_object_name      TYPE dfies-tabname
-        !iv_stack_name       TYPE dfies-tabname
-      RETURNING
-        VALUE(ro_controller) TYPE REF TO zcl_mvcfw_base_lvc_controller .
-    CLASS-METHODS _form_base_controller_template .
-    METHODS _clear_view_action .
+  methods _CREATE_ANY_OBJECT
+    importing
+      !IV_CLASS_NAME type SEOCLSNAME
+      !IS_CLASS_TYPE type LTY_CLASS_TYPE
+    exporting
+      !EV_CLASS_NAME type SEOCLSNAME
+    returning
+      value(RO_CLASS) type ref to OBJECT .
+  methods _BUILD_STACK
+    importing
+      !IV_NAME type DFIES-TABNAME
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
+      !IO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW optional
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional .
+  methods _GET_STACK
+    importing
+      !IV_NAME type DFIES-TABNAME
+    returning
+      value(RS_STACK) type ref to TS_STACK .
+  methods _SET_DYNP_STACK_NAME
+    importing
+      !IO_STACK type ref to TS_STACK
+      !IV_OBJECT_NAME type DFIES-TABNAME
+      !IV_STACK_NAME type DFIES-TABNAME
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  class-methods _FORM_BASE_CONTROLLER_TEMPLATE .
+  methods _CLEAR_VIEW_ACTION .
 ENDCLASS.
 
 
@@ -843,13 +843,14 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
     CHECK iv_stack_name IS NOT INITIAL.
 
     lmv_current_stack = |{ iv_stack_name CASE = UPPER }|.
+    DATA(lr_stack)    = _get_stack( lmv_current_stack ).
 
     IF io_model IS BOUND.
       lo_model ?= io_model.
       lo_model->set_stack_name( lmv_current_stack ).
     ELSE.
-      IF _get_stack( lmv_current_stack )->model IS BOUND.
-        lo_model ?= _get_stack( lmv_current_stack )->model.
+      IF lr_stack->model IS BOUND.
+        lo_model ?= lr_stack->model.
         lo_model->set_stack_name( lmv_current_stack ).
       ENDIF.
     ENDIF.
@@ -858,8 +859,8 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
       lo_view ?= io_view.
       lo_view->set_stack_name( lmv_current_stack ).
     ELSE.
-      IF _get_stack( lmv_current_stack )->view IS BOUND.
-        lo_view ?= _get_stack( lmv_current_stack )->view.
+      IF lr_stack->view IS BOUND.
+        lo_view ?= lr_stack->view.
         lo_view->set_stack_name( lmv_current_stack ).
       ENDIF.
     ENDIF.
@@ -1121,7 +1122,8 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
   METHOD _get_stack.
     TRY.
-        rs_stack = REF #( lmt_stack[ KEY k2 COMPONENTS name = iv_name ] ).
+        DATA(ls_stack) = VALUE #( lmt_stack[ KEY k2 COMPONENTS name = iv_name ] ).
+        rs_stack       = REF #( ls_stack ).
       CATCH cx_sy_itab_line_not_found.
     ENDTRY.
   ENDMETHOD.
