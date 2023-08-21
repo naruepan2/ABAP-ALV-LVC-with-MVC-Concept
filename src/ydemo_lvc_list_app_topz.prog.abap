@@ -10,7 +10,7 @@ TABLES: spfli.
 *&  C L A S S E S                                                      *
 *&---------------------------------------------------------------------*
 CLASS lcl_model      DEFINITION DEFERRED.
-*CLASS lcl_view_alv   DEFINITION DEFERRED.
+CLASS lcl_view       DEFINITION DEFERRED.
 CLASS lcl_controller DEFINITION DEFERRED.
 
 *&---------------------------------------------------------------------*
@@ -46,7 +46,6 @@ CLASS lcl_controller DEFINITION DEFERRED.
 *&---------------------------------------------------------------------*
 *&  G L O B A L   V A R I A B L E S                                    *
 *&---------------------------------------------------------------------*
-*DATA go_control TYPE REF TO zcl_mvcfw_base_controller.
 DATA go_control TYPE REF TO lcl_controller.
 
 

@@ -35,6 +35,8 @@ CLASS lcl_view IMPLEMENTATION.
 *    ENDIF.
 
     super->set_pf_status( it_extab = it_extab ).
+
+*    SET PF-STATUS 'YDEMO_LVC_GUI_PROG01' EXCLUDING it_extab.
   ENDMETHOD.
 
   METHOD set_top_of_page.

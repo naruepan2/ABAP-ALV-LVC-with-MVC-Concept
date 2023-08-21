@@ -65,16 +65,21 @@ public section.
   methods GET_OUTTAB
     importing
       !IV_STACK_NAME type DFIES-TABNAME optional
+      !IV_FROM_EVENT type FLAG default SPACE
+      !IV_FORMNAME type SLIS_FORMNAME optional
     returning
       value(RO_DATA) type ref to DATA .
   methods SET_OUTTAB
     importing
       !IV_STACK_NAME type DFIES-TABNAME optional
       !IT_DATA type TABLE .
+  methods CLEAR_OUTTAB
+    importing
+      !IV_STACK_NAME type DFIES-TABNAME .
   methods SET_EDITABLE_CELL
     importing
       !IV_FNAME type LVC_FNAME
-      !IV_DISABLED type ABAP_BOOL default ABAP_TRUE
+      !IV_DISABLED type ABAP_BOOL optional
     changing
       !CT_STYLE type LVC_T_STYL
     returning
@@ -387,5 +392,9 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
 
   METHOD get_stack_name.
     rv_stack_name = lmv_current_stack.
+  ENDMETHOD.
+
+
+  METHOD clear_outtab.
   ENDMETHOD.
 ENDCLASS.

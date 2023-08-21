@@ -15,6 +15,10 @@ CLASS lcl_view DEFINITION INHERITING FROM zcl_mvcfw_base_lvc_view.
     METHODS modify_html_height REDEFINITION.
     METHODS user_command REDEFINITION.
     METHODS register_event REDEFINITION.
+    METHODS check_changed_data REDEFINITION.
+
+    METHODS handle_gui_alv_grid REDEFINITION.
+
     METHODS handle_grid_toolbar REDEFINITION.
     METHODS handle_grid_user_command REDEFINITION.
 
@@ -76,10 +80,10 @@ CLASS lcl_view IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD modify_fcat.
-    super->modify_fcat( CHANGING ct_fcat = ct_fcat ).
+*    super->modify_fcat( CHANGING ct_fcat = ct_fcat ).
 
     CASE lmv_current_stack. "_get_current_stack( ).
-      WHEN 'MAIN'.
+      WHEN mc_stack_main.
         LOOP AT ct_fcat ASSIGNING FIELD-SYMBOL(<lf_fcat>).
           CASE <lf_fcat>-fieldname.
             WHEN 'CHKBOX'.
@@ -99,6 +103,14 @@ CLASS lcl_view IMPLEMENTATION.
               ENDIF.
           ENDCASE.
         ENDLOOP.
+      WHEN 'SUB01'.
+        LOOP AT ct_fcat ASSIGNING <lf_fcat>.
+          CASE <lf_fcat>-fieldname.
+            WHEN 'PRICE'
+              OR 'PLANETYPE'.
+              <lf_fcat>-edit = abap_true.
+          ENDCASE.
+        ENDLOOP.
     ENDCASE.
 
   ENDMETHOD.
@@ -108,9 +120,9 @@ CLASS lcl_view IMPLEMENTATION.
 
     super->modify_layout( CHANGING cs_layo = cs_layo ).
 
-    cs_layo-stylefname = 'ALV_CELLTAB'.
+    cs_layo-stylefname = zcl_mvcfw_base_lvc_view=>mc_layout_fname-stylefname.
 *    cs_layo-ctab_fname = 'ALV_C_COLOR'.
-    cs_layo-excp_fname = 'ALV_TRAFF'.
+    cs_layo-excp_fname = zcl_mvcfw_base_lvc_view=>mc_layout_fname-excp_fname.
 
   ENDMETHOD.
 
@@ -122,7 +134,8 @@ CLASS lcl_view IMPLEMENTATION.
   METHOD modify_callback_routines.
     CHECK iv_stack_name EQ mc_stack_main.
 
-    cv_callback_top_of_page = 'TOP_OF_PAGE'.
+*    cv_callback_top_of_page = abap_true.
+*    cv_callback_html_end_of_list = abap_true.
   ENDMETHOD.
 
   METHOD modify_html_height.
@@ -137,20 +150,16 @@ CLASS lcl_view IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD user_command.
-
-    check_changed_data_in_ucomm( ).
-
     CASE im_ucomm.
-      WHEN '&IC1'.
+      WHEN mc_double_click_ucomm.
         CASE cs_selfield-fieldname.
           WHEN 'CHKBOX'.
-*            BREAK-POINT.
             set_checkbox_value( EXPORTING iv_fieldname = cs_selfield-fieldname
                                           iv_tabindex  = cs_selfield-tabindex
                                           io_model     = io_model
                                 CHANGING  cs_selfield  = cs_selfield ).
           WHEN OTHERS.
-            CASE lmv_current_stack. "_get_current_stack( ).
+            CASE lmv_current_stack. "me->get_current_stack_name( ).
               WHEN mc_stack_main.
                 TRY.
                     create_new_view_to_controller(
@@ -177,15 +186,10 @@ CLASS lcl_view IMPLEMENTATION.
 *    me->refresh_alv( CHANGING cs_selfield = cs_selfield ).
   ENDMETHOD.
 
-  METHOD handle_grid_toolbar.
-    BREAK-POINT.
-
-    super->handle_grid_toolbar( EXPORTING e_object      = e_object
-                                          e_interactive = e_interactive ).
+  METHOD check_changed_data.
   ENDMETHOD.
 
-  METHOD handle_grid_user_command.
-    BREAK-POINT.
+  METHOD handle_gui_alv_grid.
   ENDMETHOD.
 
   METHOD _modify_grid_in_register_event.
@@ -212,5 +216,13 @@ CLASS lcl_view IMPLEMENTATION.
 *    SET HANDLER event_receiver->handle_user_command_test FOR lo_grid.
 *    SET HANDLER event_receiver->handle_toolbar_test FOR lo_grid.
 *    CALL METHOD lo_grid->set_toolbar_interactive.
+  ENDMETHOD.
+
+  METHOD handle_grid_toolbar.
+*    super->handle_grid_toolbar( EXPORTING e_object      = e_object
+*                                          e_interactive = e_interactive ).
+  ENDMETHOD.
+
+  METHOD handle_grid_user_command.
   ENDMETHOD.
 ENDCLASS.

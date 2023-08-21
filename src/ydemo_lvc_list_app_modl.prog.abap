@@ -57,8 +57,9 @@ CLASS lcl_model IMPLEMENTATION.
       IF sy-tabix BETWEEN 1 AND 5.
         <lfs_out>-alv_traff = 1. "Red
         me->set_editable_cell(
-             EXPORTING iv_fname = 'CHKBOX'
-             CHANGING  ct_style = <lfs_out>-alv_celltab ).
+             EXPORTING iv_fname    = 'CHKBOX'
+                       iv_disabled = abap_true
+             CHANGING  ct_style    = <lfs_out>-alv_celltab ).
       ELSEIF sy-tabix BETWEEN 6 AND 8.
         <lfs_out>-alv_traff = 2. "Yellow
       ELSE.
@@ -88,7 +89,10 @@ CLASS lcl_model IMPLEMENTATION.
       WHEN mc_stack_main.
         ro_data = _get_main_outtab( ).
       WHEN 'SUB01'.
-        _get_demo_sub01_data( ).
+        IF iv_from_event IS INITIAL.
+          _get_demo_sub01_data( ).
+        ENDIF.
+
         ro_data = _get_demo_sub01_outtab( ).
       WHEN OTHERS.
     ENDCASE.
