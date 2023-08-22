@@ -2076,6 +2076,7 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
 
   METHOD _generate_fcat_from_itab.
+    CONSTANTS lc_mandt TYPE datatype_d VALUE 'CLNT'.
     DATA: table TYPE REF TO data.
 
     TRY.
@@ -2091,13 +2092,17 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
             r_columns      = lo_table->get_columns( )         " ALV Filter
             r_aggregations = lo_table->get_aggregations( ) ). " ALV Aggregations
 
-        set_fcat_technical( EXPORTING iv_fieldname = 'MANDT'
+        IF line_exists( rt_fcat[ datatype = lc_mandt ] ).
+          rt_fcat[ datatype = lc_mandt ]-tech = abap_true.
+        ENDIF.
+
+        set_fcat_technical( EXPORTING iv_fieldname = mc_layout_fname-excp_fname
                             CHANGING  ct_fcat      = rt_fcat ).
-        set_fcat_technical( EXPORTING iv_fieldname = 'ALV_TRAFF'
+        set_fcat_technical( EXPORTING iv_fieldname = mc_layout_fname-stylefname
                             CHANGING  ct_fcat      = rt_fcat ).
-        set_fcat_technical( EXPORTING iv_fieldname = 'ALV_CELL'
+        set_fcat_technical( EXPORTING iv_fieldname = mc_layout_fname-info_fname
                             CHANGING  ct_fcat      = rt_fcat ).
-        set_fcat_technical( EXPORTING iv_fieldname = 'ALV_COLOR'
+        set_fcat_technical( EXPORTING iv_fieldname = mc_layout_fname-ctab_fname
                             CHANGING  ct_fcat      = rt_fcat ).
       CATCH cx_salv_msg.
     ENDTRY.
