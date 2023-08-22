@@ -96,6 +96,12 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Field Catalog for List Viewer Control</DESCRIPT>
     </SEOSUBCOTX>
+    <SEOSUBCOTX>
+     <CMPNAME>GET_FCAT_FROM_INTERNAL_TABLE</CMPNAME>
+     <SCONAME>IV_TABLE_NAME</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>LVC tab name</DESCRIPT>
+    </SEOSUBCOTX>
    </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
