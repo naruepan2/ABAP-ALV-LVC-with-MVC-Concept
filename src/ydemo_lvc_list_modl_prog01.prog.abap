@@ -26,16 +26,9 @@ CLASS lcl_model DEFINITION INHERITING FROM zcl_mvcfw_base_lvc_model.
   PRIVATE SECTION.
 
     DATA mt_outtab TYPE tty_outtab.
-    DATA mt_demo_sub01 TYPE sflight_tab2.
 
     METHODS _get_main_outtab
       RETURNING VALUE(ro_data) TYPE REF TO data.
-
-    METHODS _get_demo_sub01_outtab
-      RETURNING VALUE(ro_data) TYPE REF TO data.
-
-    METHODS _get_demo_sub01_data
-      RETURNING VALUE(rt_mard) TYPE sflight_tab2.
 
 ENDCLASS.
 
@@ -87,9 +80,6 @@ CLASS lcl_model IMPLEMENTATION.
     CASE iv_stack_name.
       WHEN mc_stack_main.
         ro_data = _get_main_outtab( ).
-      WHEN 'SUB01'.
-        _get_demo_sub01_data( ).
-        ro_data = _get_demo_sub01_outtab( ).
       WHEN OTHERS.
     ENDCASE.
   ENDMETHOD.
@@ -100,20 +90,6 @@ CLASS lcl_model IMPLEMENTATION.
 
   METHOD _get_main_outtab.
     ro_data = REF #( mt_outtab ).
-  ENDMETHOD.
-
-  METHOD _get_demo_sub01_outtab.
-    ro_data = REF #( mt_demo_sub01 ).
-  ENDMETHOD.
-
-  METHOD _get_demo_sub01_data.
-    READ TABLE mt_outtab INTO DATA(ls_outtab) INDEX ms_action-selfield-tabindex.
-    IF sy-subrc EQ 0.
-      SELECT * FROM sflight
-        WHERE carrid EQ @ls_outtab-carrid
-          AND connid EQ @ls_outtab-connid
-        INTO TABLE @mt_demo_sub01.
-    ENDIF.
   ENDMETHOD.
 
 ENDCLASS.

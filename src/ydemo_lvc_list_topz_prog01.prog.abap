@@ -10,7 +10,7 @@ TABLES: spfli.
 *&  C L A S S E S                                                      *
 *&---------------------------------------------------------------------*
 CLASS lcl_model      DEFINITION DEFERRED.
-*CLASS lcl_view_alv   DEFINITION DEFERRED.
+CLASS lcl_view       DEFINITION DEFERRED.
 CLASS lcl_controller DEFINITION DEFERRED.
 
 *&---------------------------------------------------------------------*
