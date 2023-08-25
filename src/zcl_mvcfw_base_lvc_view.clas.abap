@@ -161,6 +161,7 @@ public section.
       !IV_SOFT_REFRESH type CHAR01 optional
     changing
       !CS_SELFIELD type SLIS_SELFIELD .
+  methods MODIFY_GRID_IN_REGISTER_EVENT .
   methods CREATE_NEW_VIEW_TO_CONTROLLER
     importing
       value(IV_STACK_NAME) type DFIES-TABNAME
@@ -439,6 +440,12 @@ public section.
     importing
       !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL
       !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional .
+  methods GET_MODEL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods GET_VIEW_OUTTAB
+    returning
+      value(RT_OUTTAB) type ref to DATA .
   methods AUTO_GENERATE_STACK_NAME
     returning
       value(RV_STACK_NAME) type DFIES-TABNAME .
@@ -558,7 +565,6 @@ protected section.
       !IT_LVC_SORT type LVC_T_SORT optional
       !IT_LVC_FILTER type LVC_T_FILT optional
       !IT_EXCLUDING_LVC type UI_FUNCTIONS optional .
-  methods _MODIFY_GRID_IN_REGISTER_EVENT .
   methods _REGISTER_EDIT_EVENT
     importing
       !IV_EVT_MODIFIED type FLAG optional
@@ -1305,7 +1311,8 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
     DATA: lv_found_routine TYPE flag.
 
     lmv_repid  = iv_repid.
-    lmt_outtab = REF #( ct_data ).
+    lmt_outtab =  COND #( WHEN ct_data   IS NOT INITIAL THEN REF #( ct_data )
+                          WHEN lmo_model IS BOUND       THEN lmo_model->get_outtab( iv_stack_name = lmv_current_stack ) ).
 
     "ALV Fieldcatlog
     IF it_fieldcat[] IS NOT INITIAL.
@@ -2152,30 +2159,6 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _modify_grid_in_register_event.
-*    "--------------------------------------------------------------------"
-*    " Get global fullscreen ALV Grid from REUSE_ALV_GRID_DISPLAY_LVC
-*    "--------------------------------------------------------------------"
-*    _get_globals_fullscreen_grid( IMPORTING es_lvc_layout   = DATA(ls_layout)
-*                                            et_lvc_fieldcat = DATA(lt_fcat)
-*                                            et_lvc_sort     = DATA(lt_sort)
-*                                            et_lvc_filter   = DATA(lt_filter) ).
-*
-*    "--------------------------------------------------------------------"
-*    " Change any parameters
-*    "--------------------------------------------------------------------"
-*
-*
-*    "--------------------------------------------------------------------"
-*    " Set new global fullscreen ALV Grid to REUSE_ALV_GRID_DISPLAY_LVC
-*    "--------------------------------------------------------------------"
-*    _set_globals_fullscreen_grid( EXPORTING is_lvc_layout   = ls_layout
-*                                            it_lvc_fieldcat = lt_fcat
-*                                            it_lvc_sort     = lt_sort
-*                                            it_lvc_filter   = lt_filter ).
-  ENDMETHOD.
-
-
   METHOD _populate_events.
     DATA: lt_event     TYPE slis_t_event,
           lt_event_add TYPE slis_t_event.
@@ -2558,5 +2541,39 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
   METHOD get_current_stack_name.
     re_current_stack = lmv_current_stack.
+  ENDMETHOD.
+
+
+  METHOD get_model.
+    ro_model ?= lmo_model.
+  ENDMETHOD.
+
+
+  METHOD get_view_outtab.
+    rt_outtab = lmt_outtab.
+  ENDMETHOD.
+
+
+  METHOD MODIFY_GRID_IN_REGISTER_EVENT.
+*    "--------------------------------------------------------------------"
+*    " Get global fullscreen ALV Grid from REUSE_ALV_GRID_DISPLAY_LVC
+*    "--------------------------------------------------------------------"
+*    _get_globals_fullscreen_grid( IMPORTING es_lvc_layout   = DATA(ls_layout)
+*                                            et_lvc_fieldcat = DATA(lt_fcat)
+*                                            et_lvc_sort     = DATA(lt_sort)
+*                                            et_lvc_filter   = DATA(lt_filter) ).
+*
+*    "--------------------------------------------------------------------"
+*    " Change any parameters
+*    "--------------------------------------------------------------------"
+*
+*
+*    "--------------------------------------------------------------------"
+*    " Set new global fullscreen ALV Grid to REUSE_ALV_GRID_DISPLAY_LVC
+*    "--------------------------------------------------------------------"
+*    _set_globals_fullscreen_grid( EXPORTING is_lvc_layout   = ls_layout
+*                                            it_lvc_fieldcat = lt_fcat
+*                                            it_lvc_sort     = lt_sort
+*                                            it_lvc_filter   = lt_filter ).
   ENDMETHOD.
 ENDCLASS.

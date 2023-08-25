@@ -1,34 +1,35 @@
-CLASS zcl_mvcfw_base_lvc_utilities DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class ZCL_MVCFW_BASE_LVC_UTILITIES definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS f4_lvc_variant
-      IMPORTING
-        !iv_report  TYPE sy-cprog OPTIONAL
-        !iv_usname  TYPE sy-uname OPTIONAL
-        !iv_save    TYPE char1 OPTIONAL
-      CHANGING
-        !cv_variant TYPE disvariant-variant .
-    CLASS-METHODS get_lvc_variant_default
-      IMPORTING
-        !iv_report        TYPE sy-cprog OPTIONAL
-        !iv_usname        TYPE sy-uname OPTIONAL
-        !iv_save          TYPE char1 OPTIONAL
-      RETURNING
-        VALUE(rv_variant) TYPE disvariant-variant .
-    CLASS-METHODS get_fcat_from_internal_table
-      IMPORTING
-        !it_table      TYPE table
-        !iv_table_name TYPE lvc_tname OPTIONAL
-      EXPORTING
-        !et_slis_fcat  TYPE slis_t_fieldcat_alv
-        !et_lvc_fcat   TYPE lvc_t_fcat .
-    CLASS-METHODS download_alv_as_excel
-      IMPORTING
-        VALUE(it_table) TYPE table .
+  class-methods F4_LVC_VARIANT
+    importing
+      !IV_REPORT type SY-CPROG optional
+      !IV_USNAME type SY-UNAME optional
+      !IV_SAVE type CHAR1 optional
+    changing
+      !CV_VARIANT type DISVARIANT-VARIANT .
+  class-methods GET_LVC_VARIANT_DEFAULT
+    importing
+      !IV_REPORT type SY-CPROG optional
+      !IV_USNAME type SY-UNAME optional
+      !IV_SAVE type CHAR1 optional
+    returning
+      value(RV_VARIANT) type DISVARIANT-VARIANT .
+  class-methods GET_FCAT_FROM_INTERNAL_TABLE
+    importing
+      !IT_TABLE type TABLE optional
+      !IV_STRUCTURE_NAME type DD02L-TABNAME optional
+      !IV_TABLE_NAME type LVC_TNAME optional
+    exporting
+      !ET_SLIS_FCAT type SLIS_T_FIELDCAT_ALV
+      !ET_LVC_FCAT type LVC_T_FCAT .
+  class-methods DOWNLOAD_ALV_AS_EXCEL
+    importing
+      value(IT_TABLE) type TABLE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -41,15 +42,12 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
   METHOD get_fcat_from_internal_table.
     DATA: table TYPE REF TO data.
 
-    CHECK it_table IS NOT INITIAL.
+    IF it_table IS SUPPLIED.
+      CREATE DATA table LIKE it_table.
+      ASSIGN table->* TO FIELD-SYMBOL(<table>).
 
-    CREATE DATA table LIKE it_table.
-    ASSIGN table->* TO FIELD-SYMBOL(<table>).
+      CHECK <table> IS ASSIGNED.
 
-    CHECK <table> IS ASSIGNED.
-
-    IF et_slis_fcat IS SUPPLIED
-    OR et_lvc_fcat  IS SUPPLIED.
       TRY.
           cl_salv_table=>factory( IMPORTING r_salv_table = DATA(salv_table)
                                   CHANGING  t_table      = <table> ).
@@ -64,7 +62,9 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
                 <lfs_lvc_fcat>-tabname = |{ iv_table_name CASE = UPPER }|.
               ENDLOOP.
             ENDIF.
-          ELSEIF et_slis_fcat IS SUPPLIED.
+          ENDIF.
+
+          IF et_slis_fcat IS SUPPLIED.
             et_slis_fcat = cl_salv_controller_metadata=>get_slis_fieldcatalog(
                 r_columns      = salv_table->get_columns( )         " ALV Filter
                 r_aggregations = salv_table->get_aggregations( ) ). " ALV Aggregations
@@ -77,6 +77,35 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
           ENDIF.
         CATCH cx_root.
       ENDTRY.
+    ELSEIF iv_structure_name IS SUPPLIED.
+      IF et_lvc_fcat IS SUPPLIED.
+        CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+          EXPORTING
+            i_structure_name       = |{ iv_structure_name CASE = UPPER }|
+            i_client_never_display = abap_true
+            i_internal_tabname     = |{ iv_table_name CASE = UPPER }|
+          CHANGING
+            ct_fieldcat            = et_lvc_fcat
+          EXCEPTIONS
+            inconsistent_interface = 1
+            program_error          = 2
+            OTHERS                 = 3.
+
+      ENDIF.
+
+      IF et_slis_fcat IS SUPPLIED.
+        CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+          EXPORTING
+            i_internal_tabname     = |{ iv_table_name CASE = UPPER }|
+            i_structure_name       = |{ iv_structure_name CASE = UPPER }|
+            i_client_never_display = abap_true
+          CHANGING
+            ct_fieldcat            = et_slis_fcat
+          EXCEPTIONS
+            inconsistent_interface = 1
+            program_error          = 2
+            OTHERS                 = 3.
+      ENDIF.
     ENDIF.
   ENDMETHOD.
 

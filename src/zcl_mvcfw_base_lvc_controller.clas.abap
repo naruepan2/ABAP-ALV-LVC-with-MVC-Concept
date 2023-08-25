@@ -347,9 +347,10 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         mo_view  ?= _create_any_object( EXPORTING iv_class_name = iv_view_name
                                                   is_class_type = VALUE #( view = abap_true )
                                         IMPORTING ev_class_name = lmv_cl_view_name ).
-*        IF mo_view IS BOUND.
+        IF mo_view IS BOUND.
 *          mo_view->set_controller_to_view( me )->set_model_to_view( mo_model ).
-*        ENDIF.
+          mo_view->set_model_to_view( mo_model ).
+        ENDIF.
       CATCH cx_sy_move_cast_error.
     ENDTRY.
 

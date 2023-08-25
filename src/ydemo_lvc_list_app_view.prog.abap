@@ -22,8 +22,10 @@ CLASS lcl_view DEFINITION INHERITING FROM zcl_mvcfw_base_lvc_view.
     METHODS handle_grid_toolbar REDEFINITION.
     METHODS handle_grid_user_command REDEFINITION.
 
+    METHODS modify_grid_in_register_event REDEFINITION.
+
   PROTECTED SECTION.
-    METHODS _modify_grid_in_register_event REDEFINITION.
+
 
   PRIVATE SECTION.
 
@@ -146,7 +148,7 @@ CLASS lcl_view IMPLEMENTATION.
 
   METHOD register_event.
     super->register_event( ).
-    _modify_grid_in_register_event( ).
+    modify_grid_in_register_event( ).
   ENDMETHOD.
 
   METHOD user_command.
@@ -192,7 +194,7 @@ CLASS lcl_view IMPLEMENTATION.
   METHOD handle_gui_alv_grid.
   ENDMETHOD.
 
-  METHOD _modify_grid_in_register_event.
+  METHOD modify_grid_in_register_event.
 *    DATA: event_receiver TYPE REF TO lcl_view.
 *
 *    DATA(lo_grid) = super->register_event( ).

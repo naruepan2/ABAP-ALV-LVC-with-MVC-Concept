@@ -136,7 +136,7 @@ CLASS lcl_view IMPLEMENTATION.
 
   METHOD register_event.
     super->register_event( ).
-    _modify_grid_in_register_event( ).
+    modify_grid_in_register_event( ).
   ENDMETHOD.
 
   METHOD user_command.
