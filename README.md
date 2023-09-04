@@ -13,7 +13,7 @@ The report YDEMO_LVC_LIST_APP is a sample application with a simple dynpro and t
 
 ![image](https://user-images.githubusercontent.com/57941447/200183813-4b2f9699-4a11-494a-9dd1-7c0e754c7304.png)
 
-If the program was double click to any row, it will deep-down into second ALV grids. 
+When the program was double click any rows of the report, it will deep-down into second ALV grids. 
 
 ![image](https://user-images.githubusercontent.com/57941447/200185986-353b7912-4894-4f08-a73b-dffae2ae6e99.png)
 ![image](https://user-images.githubusercontent.com/57941447/200185956-66ded94b-48d2-4cd3-a9d5-067e001a2e7e.png)
