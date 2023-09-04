@@ -13,9 +13,69 @@
    </VSEOCLASS>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
+     <CMPNAME>CLEAR_OUTTAB</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Template to clear output table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>GET_CONTROLLER_ACTION</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get action from controller</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>GET_OUTTAB</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Template to get output table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>GET_STACK_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get stack name</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
      <CMPNAME>MO_MODEL_UTILS</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Base class utilities for model</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>PROCESS_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Template to process/build data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SELECT_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Template to select data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_COLOR_ALL_CELLS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Set color to all of columns</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_COLOR_CELL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Set color to columns</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_EDITABLE_CELL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Set editable to columns</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_OUTTAB</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Template to set output table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_STACK_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Set stack name</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>SET_STYLE_CELL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Set styles to columns</DESCRIPT>
     </SEOCOMPOTX>
    </DESCRIPTIONS>
    <DESCRIPTIONS_SUB>

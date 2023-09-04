@@ -20,7 +20,7 @@ FORM user_command  USING up_ucomm    TYPE sy-ucomm
 
 ENDFORM.
 
-FORM check_data_changed USING er_data_changed	TYPE REF TO	cl_alv_changed_data_protocol.
+FORM check_changed_data USING er_data_changed	TYPE REF TO	cl_alv_changed_data_protocol.
 
   zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_check_changed_data( er_data_changed ).
 
@@ -28,7 +28,7 @@ ENDFORM.
 
 FORM caller_exit USING is_data TYPE slis_data_caller_exit.
 
-  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_register_event( ).
+  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_register_event( CHANGING cs_data = is_data ).
 
 ENDFORM.
 

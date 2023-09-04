@@ -128,13 +128,9 @@ public section.
       !IS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION
     returning
       value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
-  PROTECTED SECTION.
+protected section.
 
-    DATA lmv_current_stack TYPE dfies-tabname VALUE mc_stack_main ##NO_TEXT.
-
-    METHODS _get_current_stack
-      RETURNING
-        VALUE(re_current_stack) TYPE dfies-tabname .
+  data LMV_CURRENT_STACK type DFIES-TABNAME value MC_STACK_MAIN ##NO_TEXT.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -382,11 +378,6 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
       ls_style-style4    = iv_style4.
       INSERT ls_style INTO TABLE ct_style.
     ENDIF.
-  ENDMETHOD.
-
-
-  METHOD _get_current_stack.
-    re_current_stack = lmv_current_stack.
   ENDMETHOD.
 
 

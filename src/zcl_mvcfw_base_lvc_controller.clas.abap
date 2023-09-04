@@ -10,6 +10,7 @@ public section.
         selfield     TYPE slis_selfield,
         data_changed TYPE REF TO cl_alv_changed_data_protocol,
         cl_dd        TYPE REF TO cl_dd_document,
+        caller_exit  TYPE slis_data_caller_exit,
       END OF ts_lvc_view_action .
   types:
     BEGIN OF ts_stack,
@@ -57,7 +58,9 @@ public section.
   events EVT_CHECK_CHANGED_DATA
     exporting
       value(IO_DATA_CHANGED) type ref to CL_ALV_CHANGED_DATA_PROTOCOL .
-  events EVT_REGISTER_EVENT .
+  events EVT_REGISTER_EVENT
+    exporting
+      value(IS_DATA) type SLIS_DATA_CALLER_EXIT optional .
   events EVT_TOP_OF_PAGE .
   events EVT_TOP_OF_PAGE_HTML
     exporting
@@ -144,7 +147,9 @@ public section.
     importing
       !IR_DD_DOC .
   methods HANDLE_REGISTER_EVENT
-    for event EVT_REGISTER_EVENT of ZCL_MVCFW_BASE_LVC_CONTROLLER .
+    for event EVT_REGISTER_EVENT of ZCL_MVCFW_BASE_LVC_CONTROLLER
+    importing
+      !IS_DATA .
   methods SET_STACK_NAME
     importing
       !IV_STACK_NAME type DFIES-TABNAME
@@ -164,7 +169,9 @@ public section.
   methods RAISE_CHECK_CHANGED_DATA
     importing
       !IO_DATA_CHANGED type ref to CL_ALV_CHANGED_DATA_PROTOCOL .
-  methods RAISE_REGISTER_EVENT .
+  methods RAISE_REGISTER_EVENT
+    changing
+      !CS_DATA type SLIS_DATA_CALLER_EXIT optional .
   methods RAISE_TOP_OF_PAGE .
   methods RAISE_TOP_OF_PAGE_HTML
     importing
@@ -596,10 +603,15 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
             ASSIGN lo_out->* TO <lft_outtab>.
           ENDIF.
 
-          CHECK <lft_outtab> IS ASSIGNED.
+          IF <lft_outtab> IS ASSIGNED.
+            lo_stack->view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                          iv_stack_name   = lmv_current_stack
+                                                CHANGING  ct_data         = <lft_outtab> ).
+          ELSE.
+            lo_stack->view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                          iv_stack_name   = lmv_current_stack ).
+          ENDIF.
 
-          lo_stack->view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                              CHANGING  ct_data         = <lft_outtab> ).
           lo_stack->view->handle_gui_alv_grid( lo_stack->view->get_lvc_gui_alv_grid( ) ).
           lo_stack->view->redraw_alv_grid( )->refresh_table_display( ).
         ELSE.
@@ -610,17 +622,30 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
             ASSIGN lo_out->* TO <lft_outtab>.
           ENDIF.
 
-          CHECK <lft_outtab> IS ASSIGNED.
-
           IF mo_view IS BOUND.
-            mo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                         CHANGING  ct_data         = <lft_outtab> ).
+            IF <lft_outtab> IS ASSIGNED.
+              mo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                     iv_stack_name   = lmv_current_stack
+                                           CHANGING  ct_data         = <lft_outtab> ).
+            ELSE.
+              mo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                     iv_stack_name   = lmv_current_stack ).
+            ENDIF.
+
             mo_view->handle_gui_alv_grid( mo_view->get_lvc_gui_alv_grid( ) ).
             mo_view->redraw_alv_grid( )->refresh_table_display( ).
           ELSE.
             DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
-            lo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
-                                         CHANGING  ct_data         = <lft_outtab> ).
+
+            IF <lft_outtab> IS ASSIGNED.
+              lo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                     iv_stack_name   = lmv_current_stack
+                                           CHANGING  ct_data         = <lft_outtab> ).
+            ELSE.
+              lo_view->check_changed_data( EXPORTING io_data_changed = io_data_changed
+                                                     iv_stack_name   = lmv_current_stack ).
+            ENDIF.
+
             lo_view->handle_gui_alv_grid( lo_view->get_lvc_gui_alv_grid( ) ).
             lo_view->redraw_alv_grid( )->refresh_table_display( ).
           ENDIF.
@@ -674,13 +699,15 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
   METHOD handle_register_event.
     TRY.
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
+        ms_view_action-caller_exit = is_data.
+
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
-          lo_stack->view->register_event( ).
+          lo_stack->view->register_event( CHANGING cs_caller_exit = ms_view_action-caller_exit ).
         ELSEIF mo_view IS BOUND.
-          mo_view->register_event( ).
+          mo_view->register_event( CHANGING cs_caller_exit = ms_view_action-caller_exit ).
         ELSE.
           DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
-          lo_view->register_event( ).
+          lo_view->register_event( CHANGING cs_caller_exit = ms_view_action-caller_exit ).
         ENDIF.
       CATCH cx_sy_dyn_call_error INTO DATA(lo_except).
         DATA(lv_msg) = lo_except->get_text( ).
@@ -751,20 +778,20 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
-          lo_stack->view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          lo_stack->view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                                   io_model      = lo_stack->model
                                                                                   io_controller = lo_stack->controller
                                                                                   iv_stack_name = lo_stack->name
                                                                         CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSEIF mo_view IS BOUND.
-          mo_view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          mo_view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                            io_model      = me->mo_model
                                                                            io_controller = me
                                                                            iv_stack_name = lmv_current_stack
                                                                  CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSE.
           DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
-          lo_view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          lo_view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                            io_model      = me->mo_model
                                                                            io_controller = me
                                                                            iv_stack_name = lmv_current_stack
@@ -837,7 +864,11 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
   METHOD raise_register_event.
-    RAISE EVENT evt_register_event.
+    RAISE EVENT evt_register_event
+      EXPORTING
+        is_data = cs_data.
+
+    cs_data = ms_view_action-caller_exit.
   ENDMETHOD.
 
 
@@ -928,6 +959,11 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
       ms_view_action-cl_dd = ir_action->cl_dd.
     ELSE.
       CLEAR ms_view_action-cl_dd.
+    ENDIF.
+    IF ir_action->caller_exit IS NOT INITIAL.
+      ms_view_action-caller_exit = ir_action->caller_exit.
+    ELSE.
+      CLEAR ms_view_action-caller_exit.
     ENDIF.
   ENDMETHOD.
 
@@ -1116,7 +1152,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 *
 *ENDFORM.
 *
-*FORM check_data_changed USING er_data_changed  TYPE REF TO cl_alv_changed_data_protocol.
+*FORM CHECK_CHANGED_DATA USING er_data_changed  TYPE REF TO cl_alv_changed_data_protocol.
 *
 *  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_check_changed_data( er_data_changed ).
 *

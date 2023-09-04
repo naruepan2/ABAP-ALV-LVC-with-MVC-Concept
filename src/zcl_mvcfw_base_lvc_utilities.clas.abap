@@ -29,7 +29,10 @@ public section.
       !ET_LVC_FCAT type LVC_T_FCAT .
   class-methods DOWNLOAD_ALV_AS_EXCEL
     importing
-      value(IT_TABLE) type TABLE .
+      !IT_TABLE type TABLE .
+  class-methods GET_EXCLUDING_EDITABLE_TOOLBAR
+    returning
+      value(RT_EXCLUDE) type UI_FUNCTIONS .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -41,11 +44,14 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
 
   METHOD get_fcat_from_internal_table.
     DATA: table TYPE REF TO data.
+    DATA: lv_structure_name   TYPE dd02l-tabname,
+          lv_internal_tabname TYPE dd02l-tabname.
 
     IF it_table IS SUPPLIED.
       CREATE DATA table LIKE it_table.
-      ASSIGN table->* TO FIELD-SYMBOL(<table>).
+      CHECK table IS BOUND.
 
+      ASSIGN table->* TO FIELD-SYMBOL(<table>).
       CHECK <table> IS ASSIGNED.
 
       TRY.
@@ -78,12 +84,15 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
         CATCH cx_root.
       ENDTRY.
     ELSEIF iv_structure_name IS SUPPLIED.
+      lv_structure_name   = |{ iv_structure_name CASE = UPPER }|.
+      lv_internal_tabname = |{ iv_table_name CASE = UPPER }|.
+
       IF et_lvc_fcat IS SUPPLIED.
         CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
           EXPORTING
-            i_structure_name       = |{ iv_structure_name CASE = UPPER }|
+            i_structure_name       = lv_structure_name
             i_client_never_display = abap_true
-            i_internal_tabname     = |{ iv_table_name CASE = UPPER }|
+            i_internal_tabname     = lv_internal_tabname
           CHANGING
             ct_fieldcat            = et_lvc_fcat
           EXCEPTIONS
@@ -96,8 +105,8 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
       IF et_slis_fcat IS SUPPLIED.
         CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
           EXPORTING
-            i_internal_tabname     = |{ iv_table_name CASE = UPPER }|
-            i_structure_name       = |{ iv_structure_name CASE = UPPER }|
+            i_internal_tabname     = lv_internal_tabname
+            i_structure_name       = lv_structure_name
             i_client_never_display = abap_true
           CHANGING
             ct_fieldcat            = et_slis_fcat
@@ -118,8 +127,17 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
           lv_path        TYPE string,
           lv_fullpath    TYPE string,
           lv_user_action TYPE i.
+    FIELD-SYMBOLS: <lft_table> TYPE table.
 
     CHECK it_table IS NOT INITIAL.
+
+    CREATE DATA table LIKE it_table.
+    CHECK table IS BOUND.
+
+    ASSIGN table->* TO <lft_table>.
+    CHECK <lft_table> IS ASSIGNED.
+
+    <lft_table> = it_table.
 
     CALL METHOD cl_gui_frontend_services=>file_save_dialog
       EXPORTING
@@ -147,7 +165,7 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
           IMPORTING
             r_salv_table   = DATA(lo_alv)
           CHANGING
-            t_table        = it_table ).
+            t_table        = <lft_table> ).
       CATCH cx_salv_msg.
         RETURN.
     ENDTRY.
@@ -248,5 +266,35 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
     IF sy-subrc EQ 0.
       rv_variant = ls_variant-variant.
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_excluding_editable_toolbar.
+    DATA ls_exclude TYPE ui_func.
+
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_copy_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_delete_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_append_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_insert_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_move_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_copy.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_cut.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_paste.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_paste_new_row.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_loc_undo.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_refresh.
+    APPEND ls_exclude TO rt_exclude.
+    ls_exclude = cl_gui_alv_grid=>mc_fc_check.
+    APPEND ls_exclude TO rt_exclude.
   ENDMETHOD.
 ENDCLASS.
