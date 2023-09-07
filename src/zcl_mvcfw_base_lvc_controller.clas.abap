@@ -30,10 +30,12 @@ public section.
       END OF ts_stack_name .
   types:
     tt_stack TYPE TABLE OF ts_stack WITH EMPTY KEY
-                                           WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
+                                             WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
   types:
     tt_stack_name TYPE TABLE OF ts_stack_name WITH EMPTY KEY
-                                                     WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
+                                                       WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
+  types:
+    tt_controller TYPE TABLE OF REF TO zcl_mvcfw_base_lvc_controller .
 
   constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
   constants MC_DEFLT_CNTL type SEOCLSNAME value 'LCL_CONTROLLER' ##NO_TEXT.
@@ -182,13 +184,12 @@ public section.
   class-methods CHECK_ROUTINE_ONLY
     returning
       value(RV_CHECK_ONLY) type FLAG .
-  class-methods GET_STATIC_CONTROL_INSTANCE
+  class-methods GET_INSTANCE
+    importing
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional
     returning
       value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
-  methods GET_CONTROL_INSTANCE
-    returning
-      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
-  methods CHECK_ROUTINE
+  methods SET_CHECK_ROUTINE
     importing
       !IV_SET_VALUE type FLAG optional
       !IV_GET_VALUE type FLAG optional
@@ -214,10 +215,29 @@ public section.
       !IR_ACTION type ref to TS_LVC_VIEW_ACTION
     returning
       value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods GET_MODEL
+    returning
+      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
+  methods SET_MODEL
+    importing
+      !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods GET_VIEW
+    returning
+      value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  methods SET_VIEW
+    importing
+      !IO_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW
+    returning
+      value(RO_CONTROLLER) type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+  methods SET_EVENT_HANDLER_FOR_CONTROL
+    importing
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional .
 protected section.
 
-  data LMT_STACK_CALLED type TT_STACK_NAME .
-  data LMT_STACK type TT_STACK .
+  class-data LMT_STACK_CALLED type TT_STACK_NAME .
+  class-data LMT_STACK type TT_STACK .
   constants LMC_OBJ_MODEL type SEOCLSNAME value 'MODEL' ##NO_TEXT.
   constants LMC_OBJ_VIEW type SEOCLSNAME value 'VIEW' ##NO_TEXT.
   data LMV_CL_VIEW_NAME type CHAR30 .
@@ -226,7 +246,9 @@ protected section.
   data LMV_CL_CNTL_NAME type CHAR30 .
   data LMV_CURRENT_STACK type DFIES-TABNAME value MC_STACK_MAIN ##NO_TEXT.
 
-  methods _SET_EVENT_HANDLER_FOR_CONTROL .
+  methods _STORE_CONTROLLER_INSTANCE
+    importing
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
   methods _DISPLAY_LVC_GRID
     importing
       !IV_REPID type SY-CPROG default SY-CPROG
@@ -269,17 +291,15 @@ private section.
         controller TYPE flag,
       END OF lty_class_type .
 
-  class-data LMO_STATIC_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
-  data LMO_CURRENT_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
-  data LMO_CURRENT_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL .
-  data LMO_CURRENT_VIEW type ref to ZCL_MVCFW_BASE_LVC_VIEW .
+  class-data LMO_CONTROLLER_INSTANCE type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
   data LMV_ROUTINE_CHECK type FLAG .
   constants LMC_BASE_CNTL type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_CONTROLLER' ##NO_TEXT.
   constants LMC_BASE_MODEL type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_MODEL' ##NO_TEXT.
   constants LMC_BASE_VIEW type SEOCLSNAME value 'ZCL_MVCFW_BASE_LVC_VIEW' ##NO_TEXT.
   constants LMC_BASE_SSCR type SEOCLSNAME value 'ZCL_MVCFW_BASE_SSCR' ##NO_TEXT.
+  class-data LMT_CONTROLLER type TT_CONTROLLER .
 
-  methods _CREATE_ANY_OBJECT
+  class-methods _CREATE_ANY_OBJECT
     importing
       !IV_CLASS_NAME type SEOCLSNAME
       !IS_CLASS_TYPE type LTY_CLASS_TYPE
@@ -322,38 +342,35 @@ ENDCLASS.
 CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
-  METHOD check_routine.
-    IF iv_set_value IS SUPPLIED.
-      lmv_routine_check = ev_value = iv_set_value.
-    ELSEIF iv_get_value IS SUPPLIED.
-      ev_value = lmv_routine_check.
-    ENDIF.
-  ENDMETHOD.
-
-
   METHOD check_routine_only.
-    lmo_static_controller->check_routine( EXPORTING iv_get_value = abap_true
-                                          IMPORTING ev_value     = rv_check_only ).
+    lmo_controller_instance->set_check_routine( EXPORTING iv_get_value = abap_true
+                                                IMPORTING ev_value     = rv_check_only ).
   ENDMETHOD.
 
 
   METHOD constructor.
+*--------------------------------------------------------------------*
+*
+*   Parent_Class =  Child_Class   (Narrow/Up Casting)
+*   Child_Class  ?= Parent_Class  (Widening/Down Casting)
+*
+*--------------------------------------------------------------------*
     TRY.
-        mo_sscr  ?= _create_any_object( EXPORTING iv_class_name = iv_sscr_name
-                                                  is_class_type = VALUE #( sscr = abap_true )
-                                        IMPORTING ev_class_name = lmv_cl_sscr_name ).
+        mo_sscr  = CAST #( _create_any_object( EXPORTING iv_class_name = iv_sscr_name
+                                                         is_class_type = VALUE #( sscr = abap_true )
+                                               IMPORTING ev_class_name = lmv_cl_sscr_name ) ).
       CATCH cx_sy_move_cast_error.
     ENDTRY.
     TRY.
-        mo_model ?= _create_any_object( EXPORTING iv_class_name = iv_modl_name
-                                                  is_class_type = VALUE #( model = abap_true )
-                                        IMPORTING ev_class_name = lmv_cl_modl_name ).
+        mo_model = CAST #( _create_any_object( EXPORTING iv_class_name = iv_modl_name
+                                                         is_class_type = VALUE #( model = abap_true )
+                                               IMPORTING ev_class_name = lmv_cl_modl_name ) ).
       CATCH cx_sy_move_cast_error.
     ENDTRY.
     TRY.
-        mo_view  ?= _create_any_object( EXPORTING iv_class_name = iv_view_name
-                                                  is_class_type = VALUE #( view = abap_true )
-                                        IMPORTING ev_class_name = lmv_cl_view_name ).
+        mo_view  = CAST #( _create_any_object( EXPORTING iv_class_name = iv_view_name
+                                                         is_class_type = VALUE #( view = abap_true )
+                                               IMPORTING ev_class_name = lmv_cl_view_name ) ).
         IF mo_view IS BOUND.
 *          mo_view->set_controller_to_view( me )->set_model_to_view( mo_model ).
           mo_view->set_model_to_view( mo_model ).
@@ -361,16 +378,10 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
       CATCH cx_sy_move_cast_error.
     ENDTRY.
 
-    TRY.
-        lmo_static_controller  ?= me.
-        lmo_current_model      ?= mo_model.
-        lmo_current_view       ?= mo_view.
-        lmo_current_controller ?= me.
-      CATCH cx_sy_move_cast_error.
-    ENDTRY.
+    _store_controller_instance( me ).
 
     IF iv_set_handler IS NOT INITIAL.
-      _set_event_handler_for_control( ).
+      set_event_handler_for_control( ).
     ENDIF.
   ENDMETHOD.
 
@@ -399,18 +410,17 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
           WITH KEY k2
             COMPONENTS name = ls_stack_called-name.
         IF sy-subrc EQ 0.
-          lmo_static_controller  ?= lr_stack->controller.
-          lmo_current_controller ?= lr_stack->controller.
-          lmo_current_model      ?= lr_stack->model.
-          lmo_current_view       ?= lr_stack->view.
+          lmo_controller_instance = lr_stack->controller.
+          mo_model = lr_stack->model.
+          mo_view  = lr_stack->view.
 
           set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                    io_model       = lmo_current_model
-                                    io_view        = lmo_current_view
+                                    io_model       = mo_model
+                                    io_view        = mo_view
                                     iv_not_checked = abap_true ).
           _populate_view_contoller( EXPORTING io_model        = lr_stack->model
                                               io_controller   = lr_stack->controller
-                                    IMPORTING eo_current_view = lmo_current_view
+                                    IMPORTING eo_current_view = mo_view
                                     CHANGING  co_view         = lr_stack->view ).
         ENDIF.
       ENDIF.
@@ -444,18 +454,17 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
             WITH KEY k2
               COMPONENTS name = ls_stack_called-name.
           IF sy-subrc EQ 0.
-            lmo_static_controller  ?= lr_stack->controller.
-            lmo_current_controller ?= lr_stack->controller.
-            lmo_current_model      ?= lr_stack->model.
-            lmo_current_view       ?= lr_stack->view.
+            lmo_controller_instance  = lr_stack->controller.
+            mo_model = lr_stack->model.
+            mo_view  = lr_stack->view.
 
             set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                      io_model       = lmo_current_model
-                                      io_view        = lmo_current_view
+                                      io_model       = mo_model
+                                      io_view        = mo_view
                                       iv_not_checked = abap_true ).
             _populate_view_contoller( EXPORTING io_model        = lr_stack->model
                                                 io_controller   = lr_stack->controller
-                                      IMPORTING eo_current_view = lmo_current_view
+                                      IMPORTING eo_current_view = mo_view
                                       CHANGING  co_view         = lr_stack->view ).
           ENDIF.
         ENDIF.
@@ -466,18 +475,17 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
             WITH KEY k2
               COMPONENTS name = ls_stack_called-name.
           IF sy-subrc EQ 0.
-            lmo_static_controller  ?= lr_stack->controller.
-            lmo_current_controller ?= lr_stack->controller.
-            lmo_current_model      ?= lr_stack->model.
-            lmo_current_view       ?= lr_stack->view.
+            lmo_controller_instance  = lr_stack->controller.
+            mo_model = lr_stack->model.
+            mo_view  = lr_stack->view.
 
             set_stack_name( EXPORTING iv_stack_name  = ls_stack_called-name
-                                      io_model       = lmo_current_model
-                                      io_view        = lmo_current_view
+                                      io_model       = mo_model
+                                      io_view        = mo_view
                                       iv_not_checked = abap_true ).
             _populate_view_contoller( EXPORTING io_model        = lr_stack->model
                                                 io_controller   = lr_stack->controller
-                                      IMPORTING eo_current_view = lmo_current_view
+                                      IMPORTING eo_current_view = mo_view
                                       CHANGING  co_view         = lr_stack->view ).
           ENDIF.
         ENDIF.
@@ -549,29 +557,6 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_control_instance.
-    READ TABLE lmt_stack INTO DATA(ls_stack)
-      WITH KEY k2 COMPONENTS name = lmv_current_stack.
-    IF sy-subrc EQ 0.
-      IF ls_stack-controller IS BOUND.
-        ro_controller ?= ls_stack-controller.
-      ELSE.
-        IF lmo_static_controller IS NOT BOUND.
-          lmo_static_controller = NEW #( ).
-        ENDIF.
-
-        ro_controller ?= lmo_static_controller.
-      ENDIF.
-    ELSE.
-      IF lmo_static_controller IS NOT BOUND.
-        lmo_static_controller = NEW #( ).
-      ENDIF.
-
-      ro_controller ?= lmo_static_controller.
-    ENDIF.
-  ENDMETHOD.
-
-
   METHOD get_current_stack.
     rv_current_stack = lmv_current_stack.
   ENDMETHOD.
@@ -581,11 +566,6 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
     CHECK iv_stack_name IS NOT INITIAL.
 
     rs_stack = me->_get_stack( EXPORTING iv_name = iv_stack_name ).
-  ENDMETHOD.
-
-
-  METHOD get_static_control_instance.
-    ro_controller = lmo_static_controller->get_control_instance( ).
   ENDMETHOD.
 
 
@@ -615,7 +595,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
           lo_stack->view->handle_gui_alv_grid( lo_stack->view->get_lvc_gui_alv_grid( ) ).
           lo_stack->view->redraw_alv_grid( )->refresh_table_display( ).
         ELSE.
-          lo_out = lmo_current_model->get_outtab( iv_stack_name = lmv_current_stack
+          lo_out = mo_model->get_outtab( iv_stack_name = lmv_current_stack
                                                   iv_from_event = abap_true
                                                   iv_formname   = zcl_mvcfw_base_lvc_view=>mc_callback_fname-check_changed_data ).
           IF lo_out IS BOUND.
@@ -778,20 +758,20 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
         DATA(lo_stack) = _get_stack( lmv_current_stack ).
         IF lo_stack IS BOUND AND lo_stack->view IS BOUND.
-          lo_stack->view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          lo_stack->view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                                   io_model      = lo_stack->model
                                                                                   io_controller = lo_stack->controller
                                                                                   iv_stack_name = lo_stack->name
                                                                         CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSEIF mo_view IS BOUND.
-          mo_view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          mo_view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                            io_model      = me->mo_model
                                                                            io_controller = me
                                                                            iv_stack_name = lmv_current_stack
                                                                  CHANGING  cs_selfield   = ms_view_action-selfield ).
         ELSE.
           DATA(lo_view) = NEW zcl_mvcfw_base_lvc_view( ).
-          lo_view->CHECK_CHANGED_DATA_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
+          lo_view->check_changed_data_in_ucomm( )->user_command( EXPORTING im_ucomm      = im_ucomm
                                                                            io_model      = me->mo_model
                                                                            io_controller = me
                                                                            iv_stack_name = lmv_current_stack
@@ -906,21 +886,21 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
     DATA(lr_stack)    = _get_stack( lmv_current_stack ).
 
     IF io_model IS BOUND.
-      lo_model ?= io_model.
+      lo_model = io_model.
       lo_model->set_stack_name( lmv_current_stack ).
     ELSE.
       IF lr_stack->model IS BOUND.
-        lo_model ?= lr_stack->model.
+        lo_model = lr_stack->model.
         lo_model->set_stack_name( lmv_current_stack ).
       ENDIF.
     ENDIF.
 
     IF io_view IS BOUND.
-      lo_view ?= io_view.
+      lo_view = io_view.
       lo_view->set_stack_name( lmv_current_stack ).
     ELSE.
       IF lr_stack->view IS BOUND.
-        lo_view ?= lr_stack->view.
+        lo_view = lr_stack->view.
         lo_view->set_stack_name( lmv_current_stack ).
       ENDIF.
     ENDIF.
@@ -979,10 +959,11 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
     IF NOT line_exists( lmt_stack[ KEY k2 COMPONENTS name = lv_name ] ).
       CLEAR: lo_view, lo_model, lv_line.
 
-      lo_view       ?= io_view.
-      lo_model      ?= io_model.
-      lo_controller ?= COND #( WHEN io_controller IS BOUND THEN io_controller ELSE lmo_current_controller ).
-      lv_line        = lines( lmt_stack ) + 1.
+      lo_view       = io_view.
+      lo_model      = io_model.
+      lo_controller = COND #( WHEN io_controller IS BOUND THEN io_controller
+                              ELSE zcl_mvcfw_base_lvc_controller=>get_instance( me ) ).
+      lv_line       = lines( lmt_stack ) + 1.
 
       INSERT VALUE #( name       = COND #( WHEN lv_line EQ 1 THEN mc_stack_main ELSE lv_name )
                       view       = lo_view
@@ -1050,9 +1031,9 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
                                 ELSE lmv_current_stack ).
 
     me->_build_stack( iv_name       = lmv_current_stack   "'MAIN'
-                      io_model      = lmo_current_model
-                      io_view       = lmo_current_view
-                      io_controller = lmo_current_controller ).
+                      io_model      = mo_model
+                      io_view       = mo_view
+                      io_controller = zcl_mvcfw_base_lvc_controller=>get_instance( me ) ).
 
     DATA(lo_stack) = me->_get_stack( lmv_current_stack ).
 
@@ -1061,10 +1042,8 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         EXPORTING
           msgv1 = 'Cannot display ALV'.
     ELSE.
-      lmo_current_model ?= lo_stack->model.
-      lmo_current_view  ?= lo_stack->view.
-      lmo_static_controller  ?= lo_stack->controller.
-      lmo_current_controller ?= lo_stack->controller.
+      mo_model = lo_stack->model.
+      mo_view  = lo_stack->view.
     ENDIF.
 
     "Set Object name for Model
@@ -1138,50 +1117,50 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 **&---------------------------------------------------------------------*
 **& Include          ZINCL_FORM_BASE_CONTROLLER
 **&---------------------------------------------------------------------*
-*FORM set_pf_status USING rt_extab TYPE slis_t_extab.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_pf_status( rt_extab ).
-*
-*ENDFORM.
-*
-*FORM user_command  USING up_ucomm    TYPE sy-ucomm
-*                         us_selfield TYPE slis_selfield.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_user_command( EXPORTING im_ucomm    = up_ucomm
-*                                                                                     CHANGING  cs_selfield = us_selfield ).
-*
-*ENDFORM.
-*
-*FORM CHECK_CHANGED_DATA USING er_data_changed  TYPE REF TO cl_alv_changed_data_protocol.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_check_changed_data( er_data_changed ).
-*
-*ENDFORM.
-*
-*FORM caller_exit USING is_data TYPE slis_data_caller_exit.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_register_event( ).
-*
-*ENDFORM.
-*
-*FORM top_of_page.
-*
-*  CHECK zcl_mvcfw_base_lvc_controller=>check_routine_only( ) IS INITIAL.
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_top_of_page( ).
-*
-*ENDFORM.
-*
-*FORM top_of_page_html USING cl_dd TYPE REF TO cl_dd_document.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_top_of_page_html( cl_dd ).
-*
-*ENDFORM.
-*
-*FORM end_of_page_html USING cl_dd TYPE REF TO cl_dd_document.
-*
-*  zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->raise_end_of_page_html( cl_dd ).
-*
-*ENDFORM.
+**FORM set_pf_status USING rt_extab TYPE slis_t_extab.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_pf_status( rt_extab ).
+**
+**ENDFORM.
+**
+**FORM user_command  USING up_ucomm    TYPE sy-ucomm
+**                         us_selfield TYPE slis_selfield.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_user_command( EXPORTING im_ucomm    = up_ucomm
+**                                                                      CHANGING  cs_selfield = us_selfield ).
+**
+**ENDFORM.
+**
+**FORM check_changed_data USING er_data_changed	TYPE REF TO	cl_alv_changed_data_protocol.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_check_changed_data( er_data_changed ).
+**
+**ENDFORM.
+**
+**FORM caller_exit USING is_data TYPE slis_data_caller_exit.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_register_event( CHANGING cs_data = is_data ).
+**
+**ENDFORM.
+**
+**FORM top_of_page.
+**
+**  CHECK zcl_mvcfw_base_lvc_controller=>check_routine_only( ) IS INITIAL.
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_top_of_page( ).
+**
+**ENDFORM.
+**
+**FORM top_of_page_html USING cl_dd TYPE REF TO cl_dd_document.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_top_of_page_html( cl_dd ).
+**
+**ENDFORM.
+**
+**FORM end_of_page_html USING cl_dd TYPE REF TO cl_dd_document.
+**
+**  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_end_of_page_html( cl_dd ).
+**
+**ENDFORM.
   ENDMETHOD.
 
 
@@ -1211,24 +1190,97 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _set_event_handler_for_control.
-    SET HANDLER handle_pf_status
-                handle_user_command
-                handle_check_changed_data
-                handle_register_event
-                handle_top_of_page
-                handle_top_of_page_html
-                handle_end_of_page_html
-            FOR me.
-  ENDMETHOD.
-
-
   METHOD _populate_view_contoller.
     CHECK co_view IS BOUND.
 
     co_view->set_view_attributes( EXPORTING io_model      = io_model
                                             io_controller = io_controller ).
 
-    eo_current_view ?= co_view.
+    eo_current_view = co_view.
+  ENDMETHOD.
+
+
+  METHOD get_instance.
+    IF io_controller IS BOUND.
+      lmo_controller_instance = VALUE #( lmt_controller[ table_line = io_controller ]
+                                            DEFAULT lmo_controller_instance ).
+      ro_controller           = lmo_controller_instance.
+    ELSE.
+      ro_controller = lmo_controller_instance.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_model.
+    ro_model = mo_model.
+  ENDMETHOD.
+
+
+  METHOD get_view.
+    ro_view = mo_view.
+  ENDMETHOD.
+
+
+  METHOD _store_controller_instance.
+    CHECK io_controller IS BOUND.
+
+    TRY.
+        lmo_controller_instance = io_controller.
+
+        IF NOT line_exists( lmt_controller[ table_line = io_controller ] ).
+          lmt_controller = VALUE #( BASE lmt_controller ( io_controller ) ).
+        ENDIF.
+      CATCH cx_sy_move_cast_error.
+    ENDTRY.
+  ENDMETHOD.
+
+
+  METHOD set_view.
+    ro_controller = me.
+
+    IF io_view IS BOUND.
+      mo_view = io_view.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD set_model.
+    ro_controller = me.
+
+    IF io_model IS BOUND.
+      mo_model = io_model.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD SET_EVENT_HANDLER_FOR_CONTROL.
+    IF io_controller IS BOUND.
+      SET HANDLER handle_pf_status
+                  handle_user_command
+                  handle_check_changed_data
+                  handle_register_event
+                  handle_top_of_page
+                  handle_top_of_page_html
+                  handle_end_of_page_html
+              FOR io_controller.
+    ELSE.
+      SET HANDLER handle_pf_status
+                  handle_user_command
+                  handle_check_changed_data
+                  handle_register_event
+                  handle_top_of_page
+                  handle_top_of_page_html
+                  handle_end_of_page_html
+              FOR me.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD set_check_routine.
+    IF iv_set_value IS SUPPLIED.
+      lmv_routine_check = ev_value = iv_set_value.
+    ELSEIF iv_get_value IS SUPPLIED.
+      ev_value = lmv_routine_check.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

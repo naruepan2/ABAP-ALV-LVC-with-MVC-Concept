@@ -164,8 +164,16 @@ CLASS lcl_view IMPLEMENTATION.
             CASE lmv_current_stack. "me->get_current_stack_name( ).
               WHEN mc_stack_main.
                 TRY.
+                    DATA lo_model TYPE REF TO zcl_mvcfw_base_lvc_model.
+*
+                    CALL METHOD go_control->('GET_MODEL')
+                      RECEIVING
+                        ro_model = lo_model.
+
                     create_new_view_to_controller(
                       iv_stack_name = 'SUB01'     "<-- pass any stack name
+                      io_model      = lo_model  "io_model
+                      io_controller = go_test1
                       ir_action     = NEW #( ucomm    = im_ucomm
                                              selfield = cs_selfield ) )->display_sub_alv( ).
 

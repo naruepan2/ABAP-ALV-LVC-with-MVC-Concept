@@ -181,8 +181,6 @@ public section.
       !IO_MODEL type ref to ZCL_MVCFW_BASE_LVC_MODEL optional
       !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional
       !IR_ACTION type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION optional
-    exporting
-      !EO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER
     returning
       value(RO_VIEW) type ref to ZCL_MVCFW_BASE_LVC_VIEW
     raising
@@ -691,32 +689,27 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
           msgv1 = 'Please enter stack name'.
     ENDIF.
 
-    ro_view        = me.
-    lo_controller ?= COND #( WHEN io_controller IS BOUND THEN io_controller
-                             ELSE zcl_mvcfw_base_lvc_controller=>get_static_control_instance( ) ).
-    lo_model      ?= COND #( WHEN io_model IS BOUND THEN io_model
-                             ELSE zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->mo_model ).
+    ro_view       = me.
+    lo_controller = zcl_mvcfw_base_lvc_controller=>get_instance( io_controller ).
+    lo_model      = COND #( WHEN io_model IS BOUND THEN io_model
+                            ELSE lo_controller->mo_model ).
 
     TRY.
         me->set_controller_to_view( lo_controller )->set_model_to_view( lo_model ).
 
-        zcl_mvcfw_base_lvc_controller=>get_static_control_instance(
-                                        )->set_stack_name( iv_stack_name = |{ iv_stack_name CASE = UPPER }|
-                                                           io_model      = lo_model
-                                                           io_view       = me
-                                        )->set_view_action( ir_action ).
+        lo_controller->set_stack_name( iv_stack_name = |{ iv_stack_name CASE = UPPER }|
+                                       io_model      = lo_model
+                                       io_view       = me
+                    )->set_view_action( ir_action ).
       CATCH cx_sy_dyn_call_error INTO DATA(lo_dyn_except).
         DATA(lv_dyn_msg) = lo_dyn_except->get_text( ).
     ENDTRY.
-
-    eo_controller ?= lo_controller.
   ENDMETHOD.
 
 
   METHOD destroy_view.
-    zcl_mvcfw_base_lvc_controller=>get_static_control_instance(
-                                      )->destroy_stack( iv_name         = iv_name
-                                                        iv_current_name = iv_current_name ).
+    zcl_mvcfw_base_lvc_controller=>get_instance( )->destroy_stack( iv_name         = iv_name
+                                                                   iv_current_name = iv_current_name ).
   ENDMETHOD.
 
 
@@ -1619,7 +1612,7 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
     TRY.
         IF io_controller IS BOUND.
-          lmo_controller ?= io_controller.
+          lmo_controller = CAST #( io_controller ).
         ENDIF.
       CATCH cx_sy_move_cast_error.
     ENDTRY.
@@ -1795,7 +1788,7 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
 
     TRY.
         IF io_model IS BOUND.
-          lmo_model ?= io_model.
+          lmo_model = CAST #( io_model ).
         ENDIF.
       CATCH cx_sy_move_cast_error.
     ENDTRY.
@@ -1956,38 +1949,38 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
   METHOD _check_routine.
     DATA: lv_formname TYPE slis_formname.
 
-    DATA(lo_controller) = zcl_mvcfw_base_lvc_controller=>get_static_control_instance( ).
+    DATA(lo_controller) = zcl_mvcfw_base_lvc_controller=>get_instance( ).
     CHECK lo_controller IS BOUND.
 
     TRY.
         lv_formname = |{ iv_formname CASE = UPPER }|.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_true ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_true ).
         PERFORM (lv_formname) IN PROGRAM (lmv_repid).
       CATCH cx_sy_dyn_call_illegal_form.
         ev_found = abap_false.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
         RETURN.
       CATCH cx_sy_dyn_call_param_missing.
         ev_found = abap_true.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
         RETURN.
       CATCH cx_sy_dyn_call_param_not_found.
         ev_found = abap_true.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
         RETURN.
       CATCH cx_sy_program_not_found.
         ev_found = abap_false.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
         RETURN.
       CATCH cx_sy_no_handler.
         ev_found = abap_false.
-        lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+        lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
         RETURN.
     ENDTRY.
 
-    lo_controller->check_routine( EXPORTING iv_get_value = abap_true
-                                  IMPORTING ev_value     = ev_found ).
-    lo_controller->check_routine( EXPORTING iv_set_value = abap_false ).
+    lo_controller->set_check_routine( EXPORTING iv_get_value = abap_true
+                                      IMPORTING ev_value     = ev_found ).
+    lo_controller->set_check_routine( EXPORTING iv_set_value = abap_false ).
   ENDMETHOD.
 
 
@@ -2435,7 +2428,7 @@ CLASS ZCL_MVCFW_BASE_LVC_VIEW IMPLEMENTATION.
     DATA: lv_next_stack TYPE n LENGTH 2,
           lv_htype      TYPE dd01v-datatype.
 
-    DATA(lt_stack) = zcl_mvcfw_base_lvc_controller=>get_static_control_instance( )->get_all_stack( ).
+    DATA(lt_stack) = zcl_mvcfw_base_lvc_controller=>get_instance( )->get_all_stack( ).
 
     IF NOT line_exists( lt_stack[ KEY k2 COMPONENTS name = mc_stack_main ] ).
       rv_stack_name = mc_stack_main.
