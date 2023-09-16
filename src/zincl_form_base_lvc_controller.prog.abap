@@ -1,11 +1,6 @@
 *&---------------------------------------------------------------------*
 *& Include          ZINCL_FORM_BASE_LVC_CONTROLLER
 *&---------------------------------------------------------------------*
-*&---------------------------------------------------------------------*
-*&
-*& !!! Don't Change Any Code for this Include
-*&
-*&---------------------------------------------------------------------*
 FORM set_pf_status USING rt_extab TYPE slis_t_extab.
 
   zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_pf_status( rt_extab ).
@@ -22,13 +17,17 @@ ENDFORM.
 
 FORM check_changed_data USING er_data_changed	TYPE REF TO	cl_alv_changed_data_protocol.
 
-  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_check_changed_data( er_data_changed ).
+  IF sy-batch IS INITIAL.
+    zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_check_changed_data( er_data_changed ).
+  ENDIF.
 
 ENDFORM.
 
 FORM caller_exit USING is_data TYPE slis_data_caller_exit.
 
-  zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_register_event( CHANGING cs_data = is_data ).
+  IF sy-batch IS INITIAL.
+    zcl_mvcfw_base_lvc_controller=>get_instance( )->raise_register_event( CHANGING cs_data = is_data ).
+  ENDIF.
 
 ENDFORM.
 

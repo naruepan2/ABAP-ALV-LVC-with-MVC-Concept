@@ -84,8 +84,8 @@ public section.
       !IV_CUSTOM_SUBMIT type FLAG optional
       !IV_CLASS_NAME type SEOCLSNAME optional
     exporting
-      value(EO_DATA_REF) type ref to DATA
-      value(ET_DATA) type TABLE
+      !EO_DATA_REF type ref to DATA
+      !ET_DATA type TABLE
     raising
       ZBCX_EXCEPTION .
   methods READ_TEXT

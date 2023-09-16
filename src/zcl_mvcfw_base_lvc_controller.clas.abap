@@ -35,7 +35,7 @@ public section.
     tt_stack_name TYPE TABLE OF ts_stack_name WITH EMPTY KEY
                                                        WITH NON-UNIQUE SORTED KEY k2 COMPONENTS name .
   types:
-    tt_controller TYPE TABLE OF REF TO zcl_mvcfw_base_lvc_controller .
+    tt_controller TYPE SORTED TABLE OF REF TO zcl_mvcfw_base_lvc_controller WITH UNIQUE KEY table_line.
 
   constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
   constants MC_DEFLT_CNTL type SEOCLSNAME value 'LCL_CONTROLLER' ##NO_TEXT.
@@ -248,7 +248,7 @@ protected section.
 
   methods _STORE_CONTROLLER_INSTANCE
     importing
-      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER .
+      !IO_CONTROLLER type ref to ZCL_MVCFW_BASE_LVC_CONTROLLER optional .
   methods _DISPLAY_LVC_GRID
     importing
       !IV_REPID type SY-CPROG default SY-CPROG
@@ -1222,16 +1222,25 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
 
 
   METHOD _store_controller_instance.
-    CHECK io_controller IS BOUND.
+    IF io_controller IS BOUND.
+      TRY.
+          lmo_controller_instance = io_controller.
 
-    TRY.
-        lmo_controller_instance = io_controller.
+          IF NOT line_exists( lmt_controller[ table_line = io_controller ] ).
+            lmt_controller = VALUE #( BASE lmt_controller ( io_controller ) ).
+          ENDIF.
+        CATCH cx_sy_move_cast_error.
+      ENDTRY.
+    ELSE.
+      TRY.
+          lmo_controller_instance = me.
 
-        IF NOT line_exists( lmt_controller[ table_line = io_controller ] ).
-          lmt_controller = VALUE #( BASE lmt_controller ( io_controller ) ).
-        ENDIF.
-      CATCH cx_sy_move_cast_error.
-    ENDTRY.
+          IF NOT line_exists( lmt_controller[ table_line = me ] ).
+            lmt_controller = VALUE #( BASE lmt_controller ( me ) ).
+          ENDIF.
+        CATCH cx_sy_move_cast_error.
+      ENDTRY.
+    ENDIF.
   ENDMETHOD.
 
 

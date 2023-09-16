@@ -33,6 +33,18 @@ public section.
   class-methods GET_EXCLUDING_EDITABLE_TOOLBAR
     returning
       value(RT_EXCLUDE) type UI_FUNCTIONS .
+  class-methods DEBUGGER_FOR_BACKGROUND_JOB .
+  class-methods CREATE_BACKGROUND_JOB
+    importing
+      !IV_JOBNAME type TBTCJOB-JOBNAME optional
+      !IV_REPORT type SY-REPID default SY-REPID
+      !IV_VARIANT type RALDB-VARIANT default SY-SLSET
+      !IV_SDLSTRTDT type TBTCJOB-SDLSTRTDT optional
+      !IV_SDLSTRTTM type TBTCJOB-SDLSTRTTM optional
+      !IV_STRTIMMED type BTCH0000-CHAR1 optional
+    exporting
+      !EV_SUBRC type SY-SUBRC
+      !EV_MSG type STRING .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -296,5 +308,124 @@ CLASS ZCL_MVCFW_BASE_LVC_UTILITIES IMPLEMENTATION.
     APPEND ls_exclude TO rt_exclude.
     ls_exclude = cl_gui_alv_grid=>mc_fc_check.
     APPEND ls_exclude TO rt_exclude.
+  ENDMETHOD.
+
+
+  METHOD create_background_job.
+    DATA: lv_jobname  TYPE tbtcjob-jobname,
+          lv_jobcount TYPE tbtcjob-jobcount.
+    DATA: lv_report  TYPE sy-repid,
+          lv_variant TYPE raldb-variant.
+    DATA: lv_sdlstrtdt    TYPE tbtcjob-sdlstrtdt,
+          lv_sdlstrttm    TYPE tbtcjob-sdlstrttm,
+          lv_strtimmed    TYPE btch0000-char1,
+          lv_direct_start TYPE btch0000-char1.
+
+    lv_jobname = iv_jobname.
+
+    IF lv_jobname IS INITIAL.
+      GET TIME STAMP FIELD DATA(ts).
+      lv_jobname = |{ sy-repid }_{ sy-uname }_{ ts }|.
+    ENDIF.
+
+    lv_report  = iv_report.
+    lv_variant = iv_variant.
+
+    CALL FUNCTION 'JOB_OPEN'
+      EXPORTING
+        jobname          = lv_jobname
+      IMPORTING
+        jobcount         = lv_jobcount
+      EXCEPTIONS
+        cant_create_job  = 1
+        invalid_job_data = 2
+        jobname_missing  = 3
+        OTHERS           = 4.
+    IF sy-subrc <> 0.
+      ev_subrc = sy-subrc.
+
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO ev_msg.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'JOB_SUBMIT'
+      EXPORTING
+        authcknam               = sy-uname
+        jobcount                = lv_jobcount
+        jobname                 = lv_jobname
+        report                  = lv_report
+        variant                 = lv_variant
+      EXCEPTIONS
+        bad_priparams           = 1
+        bad_xpgflags            = 2
+        invalid_jobdata         = 3
+        jobname_missing         = 4
+        job_notex               = 5
+        job_submit_failed       = 6
+        lock_failed             = 7
+        program_missing         = 8
+        prog_abap_and_extpg_set = 9
+        OTHERS                  = 10.
+    IF sy-subrc <> 0.
+      ev_subrc = sy-subrc.
+
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO ev_msg.
+      RETURN.
+    ENDIF.
+
+    IF iv_sdlstrtdt IS NOT INITIAL
+   AND iv_sdlstrttm IS NOT INITIAL.
+      lv_sdlstrtdt = iv_sdlstrtdt.
+      lv_sdlstrttm = iv_sdlstrttm.
+    ELSEIF iv_strtimmed IS NOT INITIAL.
+      lv_strtimmed    =
+      lv_direct_start = iv_strtimmed.
+    ENDIF.
+
+    CALL FUNCTION 'JOB_CLOSE'
+      EXPORTING
+        jobcount             = lv_jobcount
+        jobname              = lv_jobname
+        sdlstrtdt            = lv_sdlstrtdt
+        sdlstrttm            = lv_sdlstrttm
+        strtimmed            = lv_strtimmed
+      EXCEPTIONS
+        cant_start_immediate = 1
+        invalid_startdate    = 2
+        jobname_missing      = 3
+        job_close_failed     = 4
+        job_nosteps          = 5
+        job_notex            = 6
+        lock_failed          = 7
+        invalid_target       = 8
+        invalid_time_zone    = 9
+        OTHERS               = 10.
+    IF sy-subrc <> 0.
+      ev_subrc = sy-subrc.
+
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO ev_msg.
+      RETURN.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD debugger_for_background_job.
+    DATA: lv_debugger TYPE flag VALUE abap_true.
+
+    IF sy-batch IS INITIAL.
+      RETURN.
+    ENDIF.
+
+*--------------------------------------------------------------------*
+* Delete lv_debugger value to avoid infinty loop when run background job
+*--------------------------------------------------------------------*
+    WHILE lv_debugger IS NOT INITIAL.
+    ENDWHILE.
   ENDMETHOD.
 ENDCLASS.
