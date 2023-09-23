@@ -78,7 +78,7 @@ CLASS lcl_model IMPLEMENTATION.
 
   METHOD get_outtab.
     CASE iv_stack_name.
-      WHEN mc_stack_main.
+      WHEN c_stack_main.
         ro_data = _get_main_outtab( ).
       WHEN OTHERS.
     ENDCASE.

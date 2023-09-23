@@ -50,7 +50,7 @@ CLASS lcl_view IMPLEMENTATION.
     DATA: lt_listheader TYPE slis_t_listheader,
           ls_listheader TYPE slis_listheader.
 
-    IF lmv_current_stack EQ mc_stack_main.
+    IF mv_current_stack EQ c_stack_main.
 *  Type H is used to display headers i.e. big font
       ls_listheader-typ  = 'H'.
       ls_listheader-info ='Flight Details'.
@@ -84,8 +84,8 @@ CLASS lcl_view IMPLEMENTATION.
   METHOD modify_fcat.
 *    super->modify_fcat( CHANGING ct_fcat = ct_fcat ).
 
-    CASE lmv_current_stack. "_get_current_stack( ).
-      WHEN mc_stack_main.
+    CASE mv_current_stack. "_get_current_stack( ).
+      WHEN c_stack_main.
         LOOP AT ct_fcat ASSIGNING FIELD-SYMBOL(<lf_fcat>).
           CASE <lf_fcat>-fieldname.
             WHEN 'CHKBOX'.
@@ -118,13 +118,13 @@ CLASS lcl_view IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD modify_layout.
-*    CHECK lmv_lastest_stack NE 'SUB01'.
+*    CHECK mv_lastest_stack NE 'SUB01'.
 
     super->modify_layout( CHANGING cs_layo = cs_layo ).
 
-    cs_layo-stylefname = zcl_mvcfw_base_lvc_view=>mc_layout_fname-stylefname.
+    cs_layo-stylefname = zcl_mvcfw_base_lvc_view=>c_layout_fname-stylefname.
 *    cs_layo-ctab_fname = 'ALV_C_COLOR'.
-    cs_layo-excp_fname = zcl_mvcfw_base_lvc_view=>mc_layout_fname-excp_fname.
+    cs_layo-excp_fname = zcl_mvcfw_base_lvc_view=>c_layout_fname-excp_fname.
 
   ENDMETHOD.
 
@@ -134,14 +134,14 @@ CLASS lcl_view IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD modify_callback_routines.
-    CHECK iv_stack_name EQ mc_stack_main.
+    CHECK iv_stack_name EQ c_stack_main.
 
 *    cv_callback_top_of_page = abap_true.
 *    cv_callback_html_end_of_list = abap_true.
   ENDMETHOD.
 
   METHOD modify_html_height.
-*    CHECK iv_stack_name EQ mc_stack_main.
+*    CHECK iv_stack_name EQ c_stack_main.
 *
 *    cv_html_height_top = 20.
   ENDMETHOD.
@@ -153,7 +153,7 @@ CLASS lcl_view IMPLEMENTATION.
 
   METHOD user_command.
     CASE im_ucomm.
-      WHEN mc_double_click_ucomm.
+      WHEN c_double_click_ucomm.
         CASE cs_selfield-fieldname.
           WHEN 'CHKBOX'.
             set_checkbox_value( EXPORTING iv_fieldname = cs_selfield-fieldname
@@ -161,8 +161,8 @@ CLASS lcl_view IMPLEMENTATION.
                                           io_model     = io_model
                                 CHANGING  cs_selfield  = cs_selfield ).
           WHEN OTHERS.
-            CASE lmv_current_stack. "me->get_current_stack_name( ).
-              WHEN mc_stack_main.
+            CASE mv_current_stack. "me->get_current_stack_name( ).
+              WHEN c_stack_main.
                 TRY.
                     create_new_view_to_controller(
                       iv_stack_name = 'SUB01'     "<-- pass any stack name

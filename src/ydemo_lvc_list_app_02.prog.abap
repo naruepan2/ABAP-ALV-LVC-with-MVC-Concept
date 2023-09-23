@@ -49,9 +49,9 @@ AT SELECTION-SCREEN.
 START-OF-SELECTION.
   TRY.
 * Get selection data
-      go_control->mo_model->select_data( ).
+      go_control->o_model->select_data( ).
 ** Process data
-      go_control->mo_model->process_data( ).
+      go_control->o_model->process_data( ).
 * Display result
       go_control->display( ).
     CATCH zbcx_exception INTO DATA(go_except).

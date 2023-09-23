@@ -43,23 +43,19 @@ public section.
         orange_intensified_inversed  TYPE char04 VALUE 'C711',
         orange_inversed              TYPE char04 VALUE 'C701',
       END OF color .
-  constants MC_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
-  constants MC_DEFLT_OUTTAB type DFIES-TABNAME value 'MT_OUTTAB' ##NO_TEXT.
-  constants MC_DEFLT_MODEL type SEOCLSNAME value 'LCL_MODEL' ##NO_TEXT.
-  constants MC_STYLE_ENABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_ENABLED ##NO_TEXT.
-  constants MC_STYLE_DISABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_DISABLED ##NO_TEXT.
-  data MO_MODEL_UTILS type ref to ZCL_MVCFW_BASE_UTILS_MODEL read-only .
-  data MS_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION read-only .
+  constants C_STACK_MAIN type DFIES-TABNAME value 'MAIN' ##NO_TEXT.
+  constants C_DEFLT_OUTTAB type DFIES-TABNAME value 'MT_OUTTAB' ##NO_TEXT.
+  constants C_DEFLT_MODEL type SEOCLSNAME value 'LCL_MODEL' ##NO_TEXT.
+  constants C_STYLE_ENABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_ENABLED ##NO_TEXT.
+  constants C_STYLE_DISABLED type RAW4 value CL_GUI_ALV_GRID=>MC_STYLE_DISABLED ##NO_TEXT.
+  data O_MODEL_UTILS type ref to ZCL_MVCFW_BASE_UTILS_MODEL read-only .
+  data S_ACTION type ZCL_MVCFW_BASE_LVC_CONTROLLER=>TS_LVC_VIEW_ACTION read-only .
 
   methods CONSTRUCTOR .
   methods SELECT_DATA
-    returning
-      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL
     raising
       ZBCX_EXCEPTION .
   methods PROCESS_DATA
-    returning
-      value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL
     raising
       ZBCX_EXCEPTION .
   methods GET_OUTTAB
@@ -117,7 +113,7 @@ public section.
       value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
   methods SET_STACK_NAME
     importing
-      !IV_STACK_NAME type DFIES-TABNAME default MC_STACK_MAIN
+      !IV_STACK_NAME type DFIES-TABNAME default C_STACK_MAIN
     returning
       value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
   methods GET_STACK_NAME
@@ -130,7 +126,7 @@ public section.
       value(RO_MODEL) type ref to ZCL_MVCFW_BASE_LVC_MODEL .
 protected section.
 
-  data LMV_CURRENT_STACK type DFIES-TABNAME value MC_STACK_MAIN ##NO_TEXT.
+  data MV_CURRENT_STACK type DFIES-TABNAME value c_stack_main ##NO_TEXT.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -140,27 +136,19 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
 
 
   METHOD constructor.
-    IF mo_model_utils IS NOT BOUND.
-      mo_model_utils = NEW #( ).
+    IF o_model_utils IS NOT BOUND.
+      o_model_utils = NEW #( ).
     ENDIF.
   ENDMETHOD.
 
 
   METHOD get_controller_action.
-    ro_model  = me.
-    ms_action = is_action.
+    ro_model = me.
+    s_action = is_action.
   ENDMETHOD.
 
 
   METHOD get_outtab.
-  ENDMETHOD.
-
-
-  METHOD process_data.
-  ENDMETHOD.
-
-
-  METHOD select_data.
   ENDMETHOD.
 
 
@@ -214,11 +202,11 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
     ENDIF.
 
     IF ls_scolo IS NOT INITIAL.
-      IF mo_model_utils IS NOT BOUND.
-        mo_model_utils = NEW #( ).
+      IF o_model_utils IS NOT BOUND.
+        o_model_utils = NEW #( ).
       ENDIF.
 
-      DATA(lt_comp) = mo_model_utils->get_component_of_data( EXPORTING is_data = is_data ).
+      DATA(lt_comp) = o_model_utils->get_component_of_data( EXPORTING is_data = is_data ).
 
       LOOP AT lt_comp INTO DATA(ls_comp).
         READ TABLE ct_color ASSIGNING <lfs_color> BINARY SEARCH
@@ -344,7 +332,7 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
 
 
   METHOD set_stack_name.
-    lmv_current_stack = iv_stack_name.
+    mv_current_stack = iv_stack_name.
     ro_model          = me.
   ENDMETHOD.
 
@@ -382,10 +370,18 @@ CLASS ZCL_MVCFW_BASE_LVC_MODEL IMPLEMENTATION.
 
 
   METHOD get_stack_name.
-    rv_stack_name = lmv_current_stack.
+    rv_stack_name = mv_current_stack.
   ENDMETHOD.
 
 
   METHOD clear_outtab.
   ENDMETHOD.
+
+
+  method PROCESS_DATA.
+  endmethod.
+
+
+  method SELECT_DATA.
+  endmethod.
 ENDCLASS.

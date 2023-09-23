@@ -123,7 +123,7 @@ CLASS lcl_view IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD modify_callback_routines.
-    CHECK iv_stack_name EQ mc_stack_main.
+    CHECK iv_stack_name EQ c_stack_main.
 
 *    cv_callback_top_of_page = 'TOP_OF_PAGE'.
   ENDMETHOD.

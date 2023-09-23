@@ -86,7 +86,7 @@ CLASS lcl_model IMPLEMENTATION.
 
   METHOD get_outtab.
     CASE iv_stack_name.
-      WHEN mc_stack_main.
+      WHEN c_stack_main.
         ro_data = _get_main_outtab( ).
       WHEN 'SUB01'.
         IF iv_from_event IS INITIAL.
@@ -111,7 +111,7 @@ CLASS lcl_model IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD _get_demo_sub01_data.
-    READ TABLE mt_outtab INTO DATA(ls_outtab) INDEX ms_action-selfield-tabindex.
+    READ TABLE mt_outtab INTO DATA(ls_outtab) INDEX s_action-selfield-tabindex.
     IF sy-subrc EQ 0.
       SELECT * FROM sflight
         WHERE carrid EQ @ls_outtab-carrid
