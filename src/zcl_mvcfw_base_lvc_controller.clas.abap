@@ -1099,7 +1099,7 @@ CLASS ZCL_MVCFW_BASE_LVC_CONTROLLER IMPLEMENTATION.
         CATCH zbcx_exception INTO DATA(lo_except).
           RAISE EXCEPTION TYPE zbcx_exception
             EXPORTING
-              msgv1 = CONV #( lo_except->get_text( ) ).
+              msgv1 = lo_except->msgv1.
       ENDTRY.
     ELSE.
       RAISE EXCEPTION TYPE zbcx_exception
